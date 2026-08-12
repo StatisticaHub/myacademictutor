@@ -1,4 +1,12 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
+
+
+/* ==========================================================================
+   RUNTIME
+   ========================================================================== */
+
+export const runtime = "nodejs";
 
 
 /* ==========================================================================
@@ -15,11 +23,6 @@ type ContactPayload = {
   goal?: unknown;
   timing?: unknown;
   message?: unknown;
-
-  /*
-   * Honeypot field.
-   * Real users should never fill this.
-   */
   website?: unknown;
 };
 
@@ -31,7 +34,7 @@ type RateLimitRecord = {
 
 
 /* ==========================================================================
-   RATE LIMIT
+   BASIC RATE LIMIT
    ========================================================================== */
 
 const RATE_LIMIT_WINDOW =
@@ -42,10 +45,7 @@ const RATE_LIMIT_MAX =
 
 
 const rateLimitStore =
-  new Map<
-    string,
-    RateLimitRecord
-  >();
+  new Map<string, RateLimitRecord>();
 
 
 function getClientIp(
@@ -56,6 +56,7 @@ function getClientIp(
       "x-forwarded-for"
     );
 
+
   if (forwarded) {
     return (
       forwarded
@@ -64,6 +65,7 @@ function getClientIp(
       "unknown"
     );
   }
+
 
   return (
     request.headers.get(
@@ -80,6 +82,7 @@ function isRateLimited(
   const now =
     Date.now();
 
+
   const current =
     rateLimitStore.get(ip);
 
@@ -92,11 +95,13 @@ function isRateLimited(
       ip,
       {
         count: 1,
+
         resetAt:
           now +
           RATE_LIMIT_WINDOW,
       }
     );
+
 
     return false;
   }
@@ -111,6 +116,7 @@ function isRateLimited(
 
 
   current.count += 1;
+
 
   rateLimitStore.set(
     ip,
@@ -216,7 +222,7 @@ function escapeHtml(
 }
 
 
-function htmlValue(
+function displayValue(
   value: string
 ) {
   return value
@@ -226,7 +232,47 @@ function htmlValue(
 
 
 /* ==========================================================================
-   EMAIL TEMPLATE
+   EMAIL TABLE ROW
+   ========================================================================== */
+
+function emailRow(
+  label: string,
+  value: string
+) {
+  return `
+    <tr>
+      <td
+        style="
+          width:150px;
+          padding:11px 0;
+          border-bottom:1px solid #eee9e1;
+          vertical-align:top;
+          color:#77716a;
+          font-size:11px;
+          font-weight:700;
+        "
+      >
+        ${escapeHtml(label)}
+      </td>
+
+      <td
+        style="
+          padding:11px 0;
+          border-bottom:1px solid #eee9e1;
+          vertical-align:top;
+          color:#181818;
+          font-size:13px;
+        "
+      >
+        ${displayValue(value)}
+      </td>
+    </tr>
+  `;
+}
+
+
+/* ==========================================================================
+   EMAIL HTML
    ========================================================================== */
 
 function buildEmailHtml(
@@ -252,32 +298,36 @@ function buildEmailHtml(
       margin:0;
       padding:0;
       background:#f5f2eb;
-      font-family:Arial,Helvetica,sans-serif;
       color:#171717;
+      font-family:Arial,Helvetica,sans-serif;
     "
   >
     <div
       style="
         max-width:680px;
         margin:0 auto;
-        padding:38px 20px;
+        padding:40px 20px;
       "
     >
+
+      <!-- HEADER -->
+
       <div
         style="
+          padding:30px;
           background:#111111;
           color:#ffffff;
-          padding:28px;
-          border-radius:18px 18px 0 0;
+          border-radius:20px 20px 0 0;
         "
       >
         <div
           style="
-            font-size:11px;
+            margin-bottom:14px;
+            color:#a39e96;
+            font-size:10px;
+            font-weight:700;
             letter-spacing:2px;
             text-transform:uppercase;
-            color:#a6a19a;
-            margin-bottom:14px;
           "
         >
           My Academic Tutor
@@ -287,8 +337,8 @@ function buildEmailHtml(
           style="
             margin:0;
             font-size:28px;
-            line-height:1.15;
             font-weight:600;
+            line-height:1.15;
           "
         >
           New website enquiry
@@ -296,13 +346,16 @@ function buildEmailHtml(
       </div>
 
 
+      <!-- CONTENT -->
+
       <div
         style="
-          background:#ffffff;
           padding:30px;
-          border-radius:0 0 18px 18px;
+          background:#ffffff;
+          border-radius:0 0 20px 20px;
         "
       >
+
         <table
           width="100%"
           cellpadding="0"
@@ -327,7 +380,7 @@ function buildEmailHtml(
           )}
 
           ${emailRow(
-            "Subject area",
+            "Subject",
             data.subjectArea
           )}
 
@@ -337,13 +390,8 @@ function buildEmailHtml(
           )}
 
           ${emailRow(
-            "Topic",
+            "Topic / course",
             data.topic
-          )}
-
-          ${emailRow(
-            "Goal",
-            data.goal
           )}
 
           ${emailRow(
@@ -353,53 +401,95 @@ function buildEmailHtml(
         </table>
 
 
+        <!-- GOAL -->
+
         <div
           style="
             margin-top:28px;
-            padding-top:24px;
+            padding-top:22px;
             border-top:1px solid #e8e3da;
           "
         >
           <div
             style="
               margin-bottom:8px;
-              font-size:11px;
+              color:#77716a;
+              font-size:10px;
               font-weight:700;
-              text-transform:uppercase;
               letter-spacing:1.2px;
-              color:#716d67;
+              text-transform:uppercase;
             "
           >
-            Message
+            Goal
           </div>
 
           <div
             style="
+              color:#191919;
               font-size:14px;
               line-height:1.7;
               white-space:pre-wrap;
             "
-          >${htmlValue(
+          >${displayValue(
+            data.goal
+          )}</div>
+        </div>
+
+
+        <!-- MESSAGE -->
+
+        <div
+          style="
+            margin-top:28px;
+            padding-top:22px;
+            border-top:1px solid #e8e3da;
+          "
+        >
+          <div
+            style="
+              margin-bottom:8px;
+              color:#77716a;
+              font-size:10px;
+              font-weight:700;
+              letter-spacing:1.2px;
+              text-transform:uppercase;
+            "
+          >
+            Additional details
+          </div>
+
+          <div
+            style="
+              color:#191919;
+              font-size:14px;
+              line-height:1.7;
+              white-space:pre-wrap;
+            "
+          >${displayValue(
             data.message
           )}</div>
         </div>
 
 
+        <!-- REFERENCE -->
+
         <div
           style="
-            margin-top:28px;
+            margin-top:30px;
             padding-top:18px;
             border-top:1px solid #e8e3da;
+            color:#99938a;
             font-size:10px;
-            color:#9a958d;
           "
         >
-          Submission ID:
+          Submission reference:
           ${escapeHtml(
             data.submissionId
           )}
         </div>
+
       </div>
+
     </div>
   </body>
 </html>
@@ -407,44 +497,8 @@ function buildEmailHtml(
 }
 
 
-function emailRow(
-  label: string,
-  value: string
-) {
-  return `
-<tr>
-  <td
-    style="
-      width:145px;
-      padding:10px 0;
-      border-bottom:1px solid #eee9e1;
-      vertical-align:top;
-      font-size:11px;
-      font-weight:700;
-      color:#77716a;
-    "
-  >
-    ${escapeHtml(label)}
-  </td>
-
-  <td
-    style="
-      padding:10px 0;
-      border-bottom:1px solid #eee9e1;
-      vertical-align:top;
-      font-size:13px;
-      color:#191919;
-    "
-  >
-    ${htmlValue(value)}
-  </td>
-</tr>
-`;
-}
-
-
 /* ==========================================================================
-   TEXT VERSION
+   TEXT EMAIL
    ========================================================================== */
 
 function buildEmailText(
@@ -462,22 +516,40 @@ function buildEmailText(
   }
 ) {
   return `
-NEW MY ACADEMIC TUTOR ENQUIRY
+MY ACADEMIC TUTOR
+New website enquiry
 
-Enquiry type: ${data.enquiryType}
-Name: ${data.name}
-Email: ${data.email}
-Subject area: ${data.subjectArea || "Not provided"}
-Level: ${data.level || "Not provided"}
-Topic: ${data.topic || "Not provided"}
-Goal: ${data.goal}
-Timing: ${data.timing || "Not provided"}
+Enquiry type:
+${data.enquiryType}
 
-MESSAGE
--------
+Name:
+${data.name}
+
+Email:
+${data.email}
+
+Subject:
+${data.subjectArea || "Not provided"}
+
+Level:
+${data.level || "Not provided"}
+
+Topic / course:
+${data.topic || "Not provided"}
+
+Timing:
+${data.timing || "Not provided"}
+
+GOAL
+----
+${data.goal}
+
+ADDITIONAL DETAILS
+------------------
 ${data.message || "Not provided"}
 
-Submission ID: ${data.submissionId}
+Submission reference:
+${data.submissionId}
 `.trim();
 }
 
@@ -491,7 +563,7 @@ export async function POST(
 ) {
   try {
     /* ----------------------------------------------------------------------
-       Parse body
+       Parse request
        ---------------------------------------------------------------------- */
 
     let body: ContactPayload;
@@ -504,6 +576,7 @@ export async function POST(
       return NextResponse.json(
         {
           ok: false,
+
           error:
             "Invalid request.",
         },
@@ -527,16 +600,14 @@ export async function POST(
 
     if (website) {
       /*
-       * Pretend success so bots
-       * do not learn that they
-       * were detected.
+       * Return success silently.
+       * Bots should not know that
+       * they were detected.
        */
 
-      return NextResponse.json(
-        {
-          ok: true,
-        }
-      );
+      return NextResponse.json({
+        ok: true,
+      });
     }
 
 
@@ -568,7 +639,7 @@ export async function POST(
 
 
     /* ----------------------------------------------------------------------
-       Clean fields
+       Clean values
        ---------------------------------------------------------------------- */
 
     const enquiryType =
@@ -577,11 +648,13 @@ export async function POST(
         100
       );
 
+
     const name =
       cleanSingleLine(
         body.name,
         120
       );
+
 
     const email =
       cleanSingleLine(
@@ -589,11 +662,13 @@ export async function POST(
         200
       ).toLowerCase();
 
+
     const subjectArea =
       cleanSingleLine(
         body.subjectArea,
         120
       );
+
 
     const level =
       cleanSingleLine(
@@ -601,23 +676,27 @@ export async function POST(
         120
       );
 
+
     const topic =
       cleanSingleLine(
         body.topic,
         200
       );
 
+
     const goal =
-      cleanSingleLine(
+      cleanMultiline(
         body.goal,
         500
       );
+
 
     const timing =
       cleanSingleLine(
         body.timing,
         150
       );
+
 
     const message =
       cleanMultiline(
@@ -627,7 +706,7 @@ export async function POST(
 
 
     /* ----------------------------------------------------------------------
-       Validate required fields
+       Required fields
        ---------------------------------------------------------------------- */
 
     if (
@@ -670,29 +749,35 @@ export async function POST(
 
 
     /* ----------------------------------------------------------------------
-       Environment configuration
+       Gmail configuration
        ---------------------------------------------------------------------- */
 
-    const resendApiKey =
+    const gmailUser =
+      process.env.GMAIL_USER;
+
+
+    const gmailAppPassword =
       process.env
-        .RESEND_API_KEY;
+        .GMAIL_APP_PASSWORD
+        ?.replace(
+          /\s+/g,
+          ""
+        );
+
 
     const contactToEmail =
       process.env
-        .CONTACT_TO_EMAIL;
-
-    const contactFromEmail =
-      process.env
-        .CONTACT_FROM_EMAIL;
+        .CONTACT_TO_EMAIL ||
+      gmailUser;
 
 
     if (
-      !resendApiKey ||
-      !contactToEmail ||
-      !contactFromEmail
+      !gmailUser ||
+      !gmailAppPassword ||
+      !contactToEmail
     ) {
       console.error(
-        "Contact email configuration is incomplete."
+        "Gmail contact configuration is incomplete."
       );
 
 
@@ -711,7 +796,7 @@ export async function POST(
 
 
     /* ----------------------------------------------------------------------
-       Build enquiry
+       Submission
        ---------------------------------------------------------------------- */
 
     const submissionId =
@@ -732,9 +817,32 @@ export async function POST(
     };
 
 
+    /* ----------------------------------------------------------------------
+       Gmail transporter
+       ---------------------------------------------------------------------- */
+
+    const transporter =
+      nodemailer.createTransport({
+        service: "gmail",
+
+        auth: {
+          user:
+            gmailUser,
+
+          pass:
+            gmailAppPassword,
+        },
+      });
+
+
+    /* ----------------------------------------------------------------------
+       Subject
+       ---------------------------------------------------------------------- */
+
     const subject =
       [
         "[My Academic Tutor]",
+
         enquiryType,
 
         topic
@@ -745,86 +853,61 @@ export async function POST(
         .join(" ");
 
 
-    const from =
-      contactFromEmail.includes(
-        "<"
-      )
-        ? contactFromEmail
-        : `My Academic Tutor <${contactFromEmail}>`;
-
-
     /* ----------------------------------------------------------------------
-       Send via Resend
+       Send
        ---------------------------------------------------------------------- */
 
-    const resendResponse =
-      await fetch(
-        "https://api.resend.com/emails",
+    try {
+      const info =
+        await transporter.sendMail({
+          from:
+            `"My Academic Tutor" <${gmailUser}>`,
+
+          to:
+            contactToEmail,
+
+          /*
+           * When you click Reply,
+           * Gmail should address the
+           * response to the visitor.
+           */
+          replyTo:
+            email,
+
+          subject,
+
+          text:
+            buildEmailText(
+              enquiry
+            ),
+
+          html:
+            buildEmailHtml(
+              enquiry
+            ),
+        });
+
+
+      console.log(
+        "Contact email sent:",
         {
-          method: "POST",
+          submissionId,
 
-          headers: {
-            Authorization:
-              `Bearer ${resendApiKey}`,
-
-            "Content-Type":
-              "application/json",
-
-            /*
-             * Prevent accidental duplicate
-             * sends if the same request is
-             * retried.
-             */
-            "Idempotency-Key":
-              submissionId,
-          },
-
-          body:
-            JSON.stringify({
-              from,
-
-              to: [
-                contactToEmail,
-              ],
-
-              /*
-               * Clicking Reply in your
-               * inbox replies directly
-               * to the learner.
-               */
-              reply_to:
-                email,
-
-              subject,
-
-              text:
-                buildEmailText(
-                  enquiry
-                ),
-
-              html:
-                buildEmailHtml(
-                  enquiry
-                ),
-            }),
+          messageId:
+            info.messageId,
         }
       );
 
 
-    const resendData =
-      await resendResponse
-        .json()
-        .catch(
-          () => null
-        );
+      return NextResponse.json({
+        ok: true,
 
-
-    if (
-      !resendResponse.ok
-    ) {
+        submissionId,
+      });
+    } catch (error) {
       console.error(
-        "Resend contact delivery failed:",
-        resendData
+        "Gmail contact delivery failed:",
+        error
       );
 
 
@@ -840,23 +923,6 @@ export async function POST(
         }
       );
     }
-
-
-    /* ----------------------------------------------------------------------
-       Success
-       ---------------------------------------------------------------------- */
-
-    return NextResponse.json(
-      {
-        ok: true,
-
-        submissionId,
-
-        emailId:
-          resendData?.id ??
-          null,
-      }
-    );
   } catch (error) {
     console.error(
       "Unexpected contact route error:",
@@ -880,13 +946,14 @@ export async function POST(
 
 
 /* ==========================================================================
-   OTHER METHODS
+   GET
    ========================================================================== */
 
 export async function GET() {
   return NextResponse.json(
     {
       ok: false,
+
       error:
         "Method not allowed.",
     },
