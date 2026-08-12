@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChangeEvent,
   FormEvent,
   useState,
 } from "react";
@@ -22,11 +23,6 @@ type FormState = {
   goal: string;
   timing: string;
   message: string;
-
-  /*
-   * Honeypot.
-   * Real visitors should never fill this.
-   */
   website: string;
 };
 
@@ -74,7 +70,8 @@ const enquiryTypes = [
     label: "Learning pathway",
   },
   {
-    value: "Research or postgraduate support",
+    value:
+      "Research or postgraduate support",
     label:
       "Research or postgraduate support",
   },
@@ -83,8 +80,10 @@ const enquiryTypes = [
     label: "Technical support",
   },
   {
-    value: "Partnership or institution",
-    label: "Partnership or institution",
+    value:
+      "Partnership or institution",
+    label:
+      "Partnership or institution",
   },
   {
     value: "General enquiry",
@@ -127,7 +126,7 @@ const timingOptions = [
    HELPERS
    ========================================================================== */
 
-function validEmail(
+function isValidEmail(
   email: string
 ) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
@@ -174,21 +173,37 @@ export default function ContactForm() {
 
 
   /* ==========================================================================
-     FIELD UPDATE
+     CHANGE HANDLER
      ========================================================================== */
 
-  function updateField(
-    field: keyof FormState,
-    value: string
+  function handleChange(
+    event: ChangeEvent<
+      | HTMLInputElement
+      | HTMLSelectElement
+      | HTMLTextAreaElement
+    >
   ) {
+    const {
+      name,
+      value,
+    } = event.target;
+
+
     setForm(
       (current) => ({
         ...current,
-        [field]: value,
+
+        [name]:
+          value,
       })
     );
 
 
+    /*
+     * Remove the old error
+     * once the visitor starts
+     * correcting the form.
+     */
     if (
       submitState ===
       "error"
@@ -203,6 +218,87 @@ export default function ContactForm() {
 
 
   /* ==========================================================================
+     VALIDATION
+     ========================================================================== */
+
+  function validateForm() {
+    const missingFields: string[] =
+      [];
+
+
+    if (
+      !form.enquiryType
+    ) {
+      missingFields.push(
+        "enquiry type"
+      );
+    }
+
+
+    if (
+      !form.name.trim()
+    ) {
+      missingFields.push(
+        "name"
+      );
+    }
+
+
+    if (
+      !form.email.trim()
+    ) {
+      missingFields.push(
+        "email"
+      );
+    }
+
+
+    if (
+      !form.goal.trim()
+    ) {
+      missingFields.push(
+        "your goal"
+      );
+    }
+
+
+    if (
+      missingFields.length >
+      0
+    ) {
+      return {
+        valid: false,
+
+        message:
+          `Please complete: ${missingFields.join(
+            ", "
+          )}.`,
+      };
+    }
+
+
+    if (
+      !isValidEmail(
+        form.email.trim()
+      )
+    ) {
+      return {
+        valid: false,
+
+        message:
+          "Please enter a valid email address.",
+      };
+    }
+
+
+    return {
+      valid: true,
+      message: "",
+    };
+  }
+
+
+  /* ==========================================================================
      SUBMIT
      ========================================================================== */
 
@@ -212,39 +308,30 @@ export default function ContactForm() {
     event.preventDefault();
 
 
-    /* ----------------------------------------------------------------------
-       Basic client validation
-       ---------------------------------------------------------------------- */
-
+    /*
+     * Prevent double submission.
+     */
     if (
-      !form.enquiryType ||
-      !form.name.trim() ||
-      !form.email.trim() ||
-      !form.goal.trim()
+      submitState ===
+      "submitting"
     ) {
-      setSubmitState(
-        "error"
-      );
-
-      setErrorMessage(
-        "Please complete the required fields before sending your enquiry."
-      );
-
       return;
     }
 
 
+    const validation =
+      validateForm();
+
+
     if (
-      !validEmail(
-        form.email.trim()
-      )
+      !validation.valid
     ) {
       setSubmitState(
         "error"
       );
 
       setErrorMessage(
-        "Please enter a valid email address."
+        validation.message
       );
 
       return;
@@ -256,6 +343,48 @@ export default function ContactForm() {
     );
 
     setErrorMessage("");
+
+
+    /* ----------------------------------------------------------------------
+       Build clean payload
+       ---------------------------------------------------------------------- */
+
+    const payload = {
+      enquiryType:
+        form.enquiryType,
+
+      name:
+        form.name.trim(),
+
+      email:
+        form.email
+          .trim()
+          .toLowerCase(),
+
+      subjectArea:
+        form.subjectArea,
+
+      level:
+        form.level,
+
+      topic:
+        form.topic.trim(),
+
+      goal:
+        form.goal.trim(),
+
+      timing:
+        form.timing,
+
+      message:
+        form.message.trim(),
+
+      /*
+       * Anti-spam honeypot.
+       */
+      website:
+        form.website,
+    };
 
 
     try {
@@ -271,37 +400,9 @@ export default function ContactForm() {
             },
 
             body:
-              JSON.stringify({
-                enquiryType:
-                  form.enquiryType,
-
-                name:
-                  form.name.trim(),
-
-                email:
-                  form.email.trim(),
-
-                subjectArea:
-                  form.subjectArea,
-
-                level:
-                  form.level,
-
-                topic:
-                  form.topic.trim(),
-
-                goal:
-                  form.goal.trim(),
-
-                timing:
-                  form.timing,
-
-                message:
-                  form.message.trim(),
-
-                website:
-                  form.website,
-              }),
+              JSON.stringify(
+                payload
+              ),
           }
         );
 
@@ -318,41 +419,58 @@ export default function ContactForm() {
         !response.ok ||
         !data?.ok
       ) {
-        throw new Error(
+        setSubmitState(
+          "error"
+        );
+
+        setErrorMessage(
           data?.error ||
             "We could not send your enquiry. Please try again."
         );
+
+        return;
       }
 
+
+      /* --------------------------------------------------------------------
+         Success
+         -------------------------------------------------------------------- */
 
       setSubmissionId(
         data.submissionId ||
           ""
       );
 
+
       setSubmitState(
         "success"
       );
+
 
       setForm(
         initialForm
       );
     } catch (error) {
+      console.error(
+        "Contact form submission failed:",
+        error
+      );
+
+
       setSubmitState(
         "error"
       );
 
+
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong. Please try again."
+        "We could not connect to the contact service. Please try again."
       );
     }
   }
 
 
   /* ==========================================================================
-     SUCCESS
+     SUCCESS STATE
      ========================================================================== */
 
   if (
@@ -363,6 +481,7 @@ export default function ContactForm() {
       <div
         className="contact-form-success"
         role="status"
+        aria-live="polite"
       >
         <div className="contact-success-icon">
           <Icon
@@ -371,15 +490,18 @@ export default function ContactForm() {
           />
         </div>
 
+
         <span className="eyebrow">
           Enquiry sent
         </span>
+
 
         <h2>
           Thanks for getting
           <br />
           in touch.
         </h2>
+
 
         <p>
           Your enquiry has been
@@ -388,6 +510,7 @@ export default function ContactForm() {
           and respond using the email
           address you provided.
         </p>
+
 
         {submissionId && (
           <div className="contact-submission-reference">
@@ -401,6 +524,7 @@ export default function ContactForm() {
           </div>
         )}
 
+
         <button
           type="button"
           className="button button-outline"
@@ -410,6 +534,10 @@ export default function ContactForm() {
             );
 
             setSubmissionId(
+              ""
+            );
+
+            setErrorMessage(
               ""
             );
           }}
@@ -452,11 +580,8 @@ export default function ContactForm() {
           value={
             form.website
           }
-          onChange={(event) =>
-            updateField(
-              "website",
-              event.target.value
-            )
+          onChange={
+            handleChange
           }
           autoComplete="off"
           tabIndex={-1}
@@ -492,24 +617,23 @@ export default function ContactForm() {
         <div className="contact-form-field">
           <label htmlFor="enquiryType">
             Enquiry type
+
             <em>
               Required
             </em>
           </label>
 
+
           <select
             id="enquiryType"
             name="enquiryType"
-            required
             value={
               form.enquiryType
             }
-            onChange={(event) =>
-              updateField(
-                "enquiryType",
-                event.target.value
-              )
+            onChange={
+              handleChange
             }
+            required
           >
             <option value="">
               Select an enquiry type
@@ -525,7 +649,9 @@ export default function ContactForm() {
                     option.value
                   }
                 >
-                  {option.label}
+                  {
+                    option.label
+                  }
                 </option>
               )
             )}
@@ -562,10 +688,12 @@ export default function ContactForm() {
           <div className="contact-form-field">
             <label htmlFor="name">
               Name
+
               <em>
                 Required
               </em>
             </label>
+
 
             <input
               id="name"
@@ -574,11 +702,8 @@ export default function ContactForm() {
               value={
                 form.name
               }
-              onChange={(event) =>
-                updateField(
-                  "name",
-                  event.target.value
-                )
+              onChange={
+                handleChange
               }
               placeholder="Your name"
               autoComplete="name"
@@ -591,10 +716,12 @@ export default function ContactForm() {
           <div className="contact-form-field">
             <label htmlFor="email">
               Email
+
               <em>
                 Required
               </em>
             </label>
+
 
             <input
               id="email"
@@ -603,14 +730,12 @@ export default function ContactForm() {
               value={
                 form.email
               }
-              onChange={(event) =>
-                updateField(
-                  "email",
-                  event.target.value
-                )
+              onChange={
+                handleChange
               }
               placeholder="you@example.com"
               autoComplete="email"
+              inputMode="email"
               maxLength={200}
               required
             />
@@ -649,17 +774,15 @@ export default function ContactForm() {
               Subject
             </label>
 
+
             <select
               id="subjectArea"
               name="subjectArea"
               value={
                 form.subjectArea
               }
-              onChange={(event) =>
-                updateField(
-                  "subjectArea",
-                  event.target.value
-                )
+              onChange={
+                handleChange
               }
             >
               <option value="">
@@ -689,17 +812,15 @@ export default function ContactForm() {
               Level
             </label>
 
+
             <select
               id="level"
               name="level"
               value={
                 form.level
               }
-              onChange={(event) =>
-                updateField(
-                  "level",
-                  event.target.value
-                )
+              onChange={
+                handleChange
               }
             >
               <option value="">
@@ -730,6 +851,7 @@ export default function ContactForm() {
             Topic or course
           </label>
 
+
           <input
             id="topic"
             name="topic"
@@ -737,11 +859,8 @@ export default function ContactForm() {
             value={
               form.topic
             }
-            onChange={(event) =>
-              updateField(
-                "topic",
-                event.target.value
-              )
+            onChange={
+              handleChange
             }
             placeholder="For example: regression, Python, calculus, RNA-seq..."
             maxLength={200}
@@ -778,10 +897,12 @@ export default function ContactForm() {
         <div className="contact-form-field">
           <label htmlFor="goal">
             Your goal
+
             <em>
               Required
             </em>
           </label>
+
 
           <textarea
             id="goal"
@@ -789,20 +910,20 @@ export default function ContactForm() {
             value={
               form.goal
             }
-            onChange={(event) =>
-              updateField(
-                "goal",
-                event.target.value
-              )
+            onChange={
+              handleChange
             }
-            placeholder="Tell us what you want to understand, prepare for, complete or improve."
+            placeholder="For example: I want help understanding regression before my university exam."
             rows={5}
             maxLength={500}
             required
           />
 
+
           <div className="contact-field-counter">
-            {form.goal.length}
+            {
+              form.goal.length
+            }
             /500
           </div>
         </div>
@@ -810,7 +931,7 @@ export default function ContactForm() {
 
 
       {/* ==================================================================
-          05 — TIMING + MESSAGE
+          05 — TIMING + ADDITIONAL DETAILS
          ================================================================== */}
 
       <section className="contact-form-section">
@@ -825,9 +946,9 @@ export default function ContactForm() {
             </strong>
 
             <p>
-              Add timing or other
-              information that could
-              help us understand the
+              Add timing or any other
+              details that could help
+              us understand your
               enquiry.
             </p>
           </div>
@@ -839,17 +960,15 @@ export default function ContactForm() {
             Timing
           </label>
 
+
           <select
             id="timing"
             name="timing"
             value={
               form.timing
             }
-            onChange={(event) =>
-              updateField(
-                "timing",
-                event.target.value
-              )
+            onChange={
+              handleChange
             }
           >
             <option value="">
@@ -879,25 +998,26 @@ export default function ContactForm() {
             Additional details
           </label>
 
+
           <textarea
             id="message"
             name="message"
             value={
               form.message
             }
-            onChange={(event) =>
-              updateField(
-                "message",
-                event.target.value
-              )
+            onChange={
+              handleChange
             }
             placeholder="Add any useful background, questions or requirements."
             rows={7}
             maxLength={4000}
           />
 
+
           <div className="contact-field-counter">
-            {form.message.length}
+            {
+              form.message.length
+            }
             /4000
           </div>
         </div>
@@ -913,6 +1033,7 @@ export default function ContactForm() {
         <div
           className="contact-form-error"
           role="alert"
+          aria-live="assertive"
         >
           <strong>
             We couldn&apos;t send
@@ -945,6 +1066,7 @@ export default function ContactForm() {
           </p>
         </div>
 
+
         <button
           type="submit"
           className="button"
@@ -957,6 +1079,7 @@ export default function ContactForm() {
           "submitting"
             ? "Sending..."
             : "Send enquiry"}
+
 
           {submitState !==
             "submitting" && (
