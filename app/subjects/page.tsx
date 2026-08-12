@@ -1,0 +1,6 @@
+import Link from "next/link";
+import SectionHeading from "@/components/SectionHeading";
+import Icon from "@/components/Icon";
+import { subjects } from "@/lib/data";
+export const metadata={title:"Subjects"};
+export default function Page(){return <main><section className="page-hero"><div className="shell"><span className="breadcrumbs">Home / Subjects</span><h1>Five disciplines.<br/>One connected education.</h1><p>Explore complete learning ecosystems in Statistics, Mathematics, Data Science, Bioinformatics and Computer Science.</p></div></section><section className="section" style={{paddingTop:20}}><div className="shell subject-grid">{subjects.map(s=><Link href={`/subjects/${s.slug}`} key={s.slug} className={`subject-card ${s.accent}`}><span className="subject-symbol">{s.symbol}</span><h3>{s.name}</h3><p>{s.description}</p><div className="card-arrow"><span>Explore {s.name}</span><Icon name="arrow" size={18}/></div></Link>)}</div></section><section className="section soft"><div className="shell"><SectionHeading eyebrow="Designed to connect" title="Move between disciplines without starting over." copy="Mathematics supports statistics. Statistics powers data science. Computing enables bioinformatics. Our structure makes those relationships visible so learners can build knowledge that transfers."/></div></section></main>}

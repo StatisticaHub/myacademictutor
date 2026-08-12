@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { pathways } from "@/lib/data";
+export const metadata={title:"Career & Academic Pathways"};
+export default function Page(){return <main><section className="page-hero"><div className="shell"><span className="breadcrumbs">Home / Pathways</span><h1>Learn toward<br/>something meaningful.</h1><p>Multi-course journeys that connect foundations to a real academic, research or career outcome.</p></div></section><section className="section" style={{paddingTop:15}}><div className="shell pathway-grid">{pathways.map(p=><Link href={`/pathways/${p.slug}`} className="pathway-card" key={p.slug}><div className="top"><span className="eyebrow">{p.tag}</span><span>{p.duration}</span></div><h3>{p.title}</h3><p>{p.description}</p><div className="pathway-steps">{p.steps.map((_,i)=><span key={i}/>)}</div><b>View full pathway →</b></Link>)}</div></section></main>}
