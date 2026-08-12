@@ -1,125 +1,55 @@
-import {
-  type NextRequest,
-  NextResponse,
-} from "next/server";
-
-
-/* ==========================================================================
-   CONFIGURATION
-   ========================================================================== */
-
-const RATE_LIMIT_WINDOW_MS =
-  10 * 60 * 1000;
-
-const RATE_LIMIT_MAX_REQUESTS = 5;
-
-const MAX_LENGTHS = {
-  name: 120,
-  email: 254,
-  enquiryType: 100,
-  subjectArea: 100,
-  level: 100,
-  topic: 500,
-  goal: 2500,
-  timing: 120,
-  subject: 300,
-  message: 6000,
-  additionalMessage: 4000,
-};
+import { NextResponse } from "next/server";
 
 
 /* ==========================================================================
    TYPES
    ========================================================================== */
 
-type ContactRequestBody = {
+type ContactPayload = {
+  enquiryType?: unknown;
   name?: unknown;
   email?: unknown;
-
-  enquiryType?: unknown;
   subjectArea?: unknown;
   level?: unknown;
   topic?: unknown;
   goal?: unknown;
   timing?: unknown;
-
-  subject?: unknown;
   message?: unknown;
-  additionalMessage?: unknown;
 
   /*
    * Honeypot field.
-   *
-   * Normal users will never fill this.
-   * Basic bots sometimes do.
+   * Real users should never fill this.
    */
   website?: unknown;
 };
 
 
-type RateLimitEntry = {
+type RateLimitRecord = {
   count: number;
   resetAt: number;
 };
 
 
 /* ==========================================================================
-   BASIC IN-MEMORY RATE LIMIT
+   RATE LIMIT
    ========================================================================== */
 
-/*
- * This is deliberately simple.
- *
- * It helps during development and provides a basic defensive layer,
- * but serverless instances may not share memory.
- *
- * Before significant production traffic, this can later be replaced
- * with a persistent rate limiter such as Redis / Upstash.
- */
+const RATE_LIMIT_WINDOW =
+  10 * 60 * 1000;
+
+const RATE_LIMIT_MAX =
+  5;
+
 
 const rateLimitStore =
   new Map<
     string,
-    RateLimitEntry
+    RateLimitRecord
   >();
 
 
-/* ==========================================================================
-   HELPERS
-   ========================================================================== */
-
-function cleanString(
-  value: unknown,
-  maxLength: number
-) {
-  if (
-    typeof value !== "string"
-  ) {
-    return "";
-  }
-
-  return value
-    .trim()
-    .slice(0, maxLength);
-}
-
-
-function isValidEmail(
-  email: string
-) {
-  /*
-   * Deliberately practical rather than
-   * attempting complete RFC validation.
-   */
-
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    email
-  );
-}
-
-
-function getClientIdentifier(
-  request: NextRequest
+function getClientIp(
+  request: Request
 ) {
   const forwarded =
     request.headers.get(
@@ -138,74 +68,417 @@ function getClientIdentifier(
   return (
     request.headers.get(
       "x-real-ip"
-    ) || "unknown"
+    ) ||
+    "unknown"
   );
 }
 
 
-function checkRateLimit(
-  identifier: string
+function isRateLimited(
+  ip: string
 ) {
-  const now = Date.now();
+  const now =
+    Date.now();
 
-  const existing =
-    rateLimitStore.get(
-      identifier
-    );
+  const current =
+    rateLimitStore.get(ip);
 
 
   if (
-    !existing ||
-    existing.resetAt <= now
+    !current ||
+    current.resetAt <= now
   ) {
     rateLimitStore.set(
-      identifier,
+      ip,
       {
         count: 1,
-
         resetAt:
           now +
-          RATE_LIMIT_WINDOW_MS,
+          RATE_LIMIT_WINDOW,
       }
     );
 
-    return {
-      allowed: true,
-      retryAfter: 0,
-    };
+    return false;
   }
 
 
   if (
-    existing.count >=
-    RATE_LIMIT_MAX_REQUESTS
+    current.count >=
+    RATE_LIMIT_MAX
   ) {
-    return {
-      allowed: false,
-
-      retryAfter:
-        Math.ceil(
-          (
-            existing.resetAt -
-            now
-          ) / 1000
-        ),
-    };
+    return true;
   }
 
 
-  existing.count += 1;
+  current.count += 1;
 
   rateLimitStore.set(
-    identifier,
-    existing
+    ip,
+    current
   );
 
 
-  return {
-    allowed: true,
-    retryAfter: 0,
-  };
+  return false;
+}
+
+
+/* ==========================================================================
+   CLEANING
+   ========================================================================== */
+
+function cleanSingleLine(
+  value: unknown,
+  maxLength = 200
+) {
+  if (
+    typeof value !==
+    "string"
+  ) {
+    return "";
+  }
+
+
+  return value
+    .trim()
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .slice(
+      0,
+      maxLength
+    );
+}
+
+
+function cleanMultiline(
+  value: unknown,
+  maxLength = 4000
+) {
+  if (
+    typeof value !==
+    "string"
+  ) {
+    return "";
+  }
+
+
+  return value
+    .trim()
+    .replace(
+      /\r\n/g,
+      "\n"
+    )
+    .slice(
+      0,
+      maxLength
+    );
+}
+
+
+function isValidEmail(
+  value: string
+) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    value
+  );
+}
+
+
+/* ==========================================================================
+   HTML SAFETY
+   ========================================================================== */
+
+function escapeHtml(
+  value: string
+) {
+  return value
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+}
+
+
+function htmlValue(
+  value: string
+) {
+  return value
+    ? escapeHtml(value)
+    : "Not provided";
+}
+
+
+/* ==========================================================================
+   EMAIL TEMPLATE
+   ========================================================================== */
+
+function buildEmailHtml(
+  data: {
+    enquiryType: string;
+    name: string;
+    email: string;
+    subjectArea: string;
+    level: string;
+    topic: string;
+    goal: string;
+    timing: string;
+    message: string;
+    submissionId: string;
+  }
+) {
+  return `
+<!doctype html>
+
+<html>
+  <body
+    style="
+      margin:0;
+      padding:0;
+      background:#f5f2eb;
+      font-family:Arial,Helvetica,sans-serif;
+      color:#171717;
+    "
+  >
+    <div
+      style="
+        max-width:680px;
+        margin:0 auto;
+        padding:38px 20px;
+      "
+    >
+      <div
+        style="
+          background:#111111;
+          color:#ffffff;
+          padding:28px;
+          border-radius:18px 18px 0 0;
+        "
+      >
+        <div
+          style="
+            font-size:11px;
+            letter-spacing:2px;
+            text-transform:uppercase;
+            color:#a6a19a;
+            margin-bottom:14px;
+          "
+        >
+          My Academic Tutor
+        </div>
+
+        <h1
+          style="
+            margin:0;
+            font-size:28px;
+            line-height:1.15;
+            font-weight:600;
+          "
+        >
+          New website enquiry
+        </h1>
+      </div>
+
+
+      <div
+        style="
+          background:#ffffff;
+          padding:30px;
+          border-radius:0 0 18px 18px;
+        "
+      >
+        <table
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="
+            border-collapse:collapse;
+          "
+        >
+          ${emailRow(
+            "Enquiry type",
+            data.enquiryType
+          )}
+
+          ${emailRow(
+            "Name",
+            data.name
+          )}
+
+          ${emailRow(
+            "Email",
+            data.email
+          )}
+
+          ${emailRow(
+            "Subject area",
+            data.subjectArea
+          )}
+
+          ${emailRow(
+            "Level",
+            data.level
+          )}
+
+          ${emailRow(
+            "Topic",
+            data.topic
+          )}
+
+          ${emailRow(
+            "Goal",
+            data.goal
+          )}
+
+          ${emailRow(
+            "Timing",
+            data.timing
+          )}
+        </table>
+
+
+        <div
+          style="
+            margin-top:28px;
+            padding-top:24px;
+            border-top:1px solid #e8e3da;
+          "
+        >
+          <div
+            style="
+              margin-bottom:8px;
+              font-size:11px;
+              font-weight:700;
+              text-transform:uppercase;
+              letter-spacing:1.2px;
+              color:#716d67;
+            "
+          >
+            Message
+          </div>
+
+          <div
+            style="
+              font-size:14px;
+              line-height:1.7;
+              white-space:pre-wrap;
+            "
+          >${htmlValue(
+            data.message
+          )}</div>
+        </div>
+
+
+        <div
+          style="
+            margin-top:28px;
+            padding-top:18px;
+            border-top:1px solid #e8e3da;
+            font-size:10px;
+            color:#9a958d;
+          "
+        >
+          Submission ID:
+          ${escapeHtml(
+            data.submissionId
+          )}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+`;
+}
+
+
+function emailRow(
+  label: string,
+  value: string
+) {
+  return `
+<tr>
+  <td
+    style="
+      width:145px;
+      padding:10px 0;
+      border-bottom:1px solid #eee9e1;
+      vertical-align:top;
+      font-size:11px;
+      font-weight:700;
+      color:#77716a;
+    "
+  >
+    ${escapeHtml(label)}
+  </td>
+
+  <td
+    style="
+      padding:10px 0;
+      border-bottom:1px solid #eee9e1;
+      vertical-align:top;
+      font-size:13px;
+      color:#191919;
+    "
+  >
+    ${htmlValue(value)}
+  </td>
+</tr>
+`;
+}
+
+
+/* ==========================================================================
+   TEXT VERSION
+   ========================================================================== */
+
+function buildEmailText(
+  data: {
+    enquiryType: string;
+    name: string;
+    email: string;
+    subjectArea: string;
+    level: string;
+    topic: string;
+    goal: string;
+    timing: string;
+    message: string;
+    submissionId: string;
+  }
+) {
+  return `
+NEW MY ACADEMIC TUTOR ENQUIRY
+
+Enquiry type: ${data.enquiryType}
+Name: ${data.name}
+Email: ${data.email}
+Subject area: ${data.subjectArea || "Not provided"}
+Level: ${data.level || "Not provided"}
+Topic: ${data.topic || "Not provided"}
+Goal: ${data.goal}
+Timing: ${data.timing || "Not provided"}
+
+MESSAGE
+-------
+${data.message || "Not provided"}
+
+Submission ID: ${data.submissionId}
+`.trim();
 }
 
 
@@ -214,514 +487,395 @@ function checkRateLimit(
    ========================================================================== */
 
 export async function POST(
-  request: NextRequest
+  request: Request
 ) {
-  /* ------------------------------------------------------------------------
-     1. Rate limit
-     ------------------------------------------------------------------------ */
-
-  const clientIdentifier =
-    getClientIdentifier(request);
-
-  const rateLimit =
-    checkRateLimit(
-      clientIdentifier
-    );
-
-
-  if (!rateLimit.allowed) {
-    return NextResponse.json(
-      {
-        error:
-          "Too many enquiries have been submitted from this connection. Please wait a few minutes and try again.",
-      },
-
-      {
-        status: 429,
-
-        headers: {
-          "Retry-After":
-            String(
-              rateLimit.retryAfter
-            ),
-        },
-      }
-    );
-  }
-
-
-  /* ------------------------------------------------------------------------
-     2. Parse JSON
-     ------------------------------------------------------------------------ */
-
-  let body: ContactRequestBody;
-
-
   try {
-    body =
-      (await request.json()) as ContactRequestBody;
-  } catch {
-    return NextResponse.json(
-      {
-        error:
-          "The enquiry could not be read. Please refresh the page and try again.",
-      },
+    /* ----------------------------------------------------------------------
+       Parse body
+       ---------------------------------------------------------------------- */
 
-      {
-        status: 400,
-      }
-    );
-  }
+    let body: ContactPayload;
 
 
-  /* ------------------------------------------------------------------------
-     3. Honeypot
-     ------------------------------------------------------------------------ */
-
-  const honeypot =
-    cleanString(
-      body.website,
-      200
-    );
-
-
-  if (honeypot) {
-    /*
-     * Return a normal-looking
-     * response to automated spam.
-     */
-
-    return NextResponse.json(
-      {
-        success: true,
-      },
-
-      {
-        status: 200,
-      }
-    );
-  }
-
-
-  /* ------------------------------------------------------------------------
-     4. Clean fields
-     ------------------------------------------------------------------------ */
-
-  const name =
-    cleanString(
-      body.name,
-      MAX_LENGTHS.name
-    );
-
-  const email =
-    cleanString(
-      body.email,
-      MAX_LENGTHS.email
-    )
-      .toLowerCase();
-
-
-  const enquiryType =
-    cleanString(
-      body.enquiryType,
-      MAX_LENGTHS.enquiryType
-    );
-
-  const subjectArea =
-    cleanString(
-      body.subjectArea,
-      MAX_LENGTHS.subjectArea
-    );
-
-  const level =
-    cleanString(
-      body.level,
-      MAX_LENGTHS.level
-    );
-
-  const topic =
-    cleanString(
-      body.topic,
-      MAX_LENGTHS.topic
-    );
-
-  const goal =
-    cleanString(
-      body.goal,
-      MAX_LENGTHS.goal
-    );
-
-  const timing =
-    cleanString(
-      body.timing,
-      MAX_LENGTHS.timing
-    );
-
-  const subject =
-    cleanString(
-      body.subject,
-      MAX_LENGTHS.subject
-    );
-
-  const message =
-    cleanString(
-      body.message,
-      MAX_LENGTHS.message
-    );
-
-  const additionalMessage =
-    cleanString(
-      body.additionalMessage,
-      MAX_LENGTHS.additionalMessage
-    );
-
-
-  /* ------------------------------------------------------------------------
-     5. Required-field validation
-     ------------------------------------------------------------------------ */
-
-  if (!name) {
-    return NextResponse.json(
-      {
-        error:
-          "Please enter your name.",
-      },
-
-      {
-        status: 400,
-      }
-    );
-  }
-
-
-  if (!email) {
-    return NextResponse.json(
-      {
-        error:
-          "Please enter your email address.",
-      },
-
-      {
-        status: 400,
-      }
-    );
-  }
-
-
-  if (
-    !isValidEmail(email)
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Please enter a valid email address.",
-      },
-
-      {
-        status: 400,
-      }
-    );
-  }
-
-
-  if (!enquiryType) {
-    return NextResponse.json(
-      {
-        error:
-          "Please select an enquiry type.",
-      },
-
-      {
-        status: 400,
-      }
-    );
-  }
-
-
-  if (!goal) {
-    return NextResponse.json(
-      {
-        error:
-          "Please tell us what you are trying to achieve.",
-      },
-
-      {
-        status: 400,
-      }
-    );
-  }
-
-
-  /* ------------------------------------------------------------------------
-     6. Build structured enquiry
-     ------------------------------------------------------------------------ */
-
-  const requestId =
-    crypto.randomUUID();
-
-  const receivedAt =
-    new Date().toISOString();
-
-
-  const enquiry = {
-    id: requestId,
-    receivedAt,
-
-    contact: {
-      name,
-      email,
-    },
-
-    enquiry: {
-      type: enquiryType,
-
-      subjectArea:
-        subjectArea || null,
-
-      level:
-        level || null,
-
-      topic:
-        topic || null,
-
-      goal,
-
-      timing:
-        timing || null,
-
-      additionalMessage:
-        additionalMessage ||
-        null,
-    },
-
-    /*
-     * These are retained because
-     * the client also generates a
-     * human-readable email-style
-     * subject and message.
-     */
-
-    formatted: {
-      subject:
-        subject ||
-        `${enquiryType} enquiry`,
-
-      message:
-        message ||
-        [
-          `Name: ${name}`,
-          `Email: ${email}`,
-          `Enquiry type: ${enquiryType}`,
-          `Subject: ${
-            subjectArea ||
-            "Not specified"
-          }`,
-          `Level: ${
-            level ||
-            "Not specified"
-          }`,
-          `Topic: ${
-            topic ||
-            "Not specified"
-          }`,
-          `Goal: ${goal}`,
-          `Timing: ${
-            timing ||
-            "Not specified"
-          }`,
-          "",
-          additionalMessage ||
-            "No additional details provided.",
-        ].join("\n"),
-    },
-  };
-
-
-  /* ------------------------------------------------------------------------
-     7. Delivery configuration
-     ------------------------------------------------------------------------ */
-
-  const webhookUrl =
-    process.env
-      .CONTACT_WEBHOOK_URL;
-
-  const webhookSecret =
-    process.env
-      .CONTACT_WEBHOOK_SECRET;
-
-
-  /*
-   * If a delivery webhook has been
-   * configured, send the structured
-   * enquiry to it.
-   */
-
-  if (webhookUrl) {
     try {
-      const deliveryResponse =
-        await fetch(
-          webhookUrl,
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              ...(webhookSecret
-                ? {
-                    Authorization:
-                      `Bearer ${webhookSecret}`,
-                  }
-                : {}),
-            },
-
-            body:
-              JSON.stringify(
-                enquiry
-              ),
-
-            cache: "no-store",
-          }
-        );
-
-
-      if (
-        !deliveryResponse.ok
-      ) {
-        console.error(
-          "Contact webhook returned an error:",
-          deliveryResponse.status
-        );
-
-
-        return NextResponse.json(
-          {
-            error:
-              "Your enquiry could not be delivered at the moment. Please try again shortly.",
-          },
-
-          {
-            status: 502,
-          }
-        );
-      }
-
-
+      body =
+        await request.json();
+    } catch {
       return NextResponse.json(
         {
-          success: true,
-
-          requestId,
+          ok: false,
+          error:
+            "Invalid request.",
         },
-
         {
-          status: 200,
+          status: 400,
         }
       );
-    } catch (error) {
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Honeypot
+       ---------------------------------------------------------------------- */
+
+    const website =
+      cleanSingleLine(
+        body.website,
+        300
+      );
+
+
+    if (website) {
+      /*
+       * Pretend success so bots
+       * do not learn that they
+       * were detected.
+       */
+
+      return NextResponse.json(
+        {
+          ok: true,
+        }
+      );
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Rate limit
+       ---------------------------------------------------------------------- */
+
+    const ip =
+      getClientIp(
+        request
+      );
+
+
+    if (
+      isRateLimited(ip)
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+
+          error:
+            "Too many enquiries have been submitted. Please try again later.",
+        },
+        {
+          status: 429,
+        }
+      );
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Clean fields
+       ---------------------------------------------------------------------- */
+
+    const enquiryType =
+      cleanSingleLine(
+        body.enquiryType,
+        100
+      );
+
+    const name =
+      cleanSingleLine(
+        body.name,
+        120
+      );
+
+    const email =
+      cleanSingleLine(
+        body.email,
+        200
+      ).toLowerCase();
+
+    const subjectArea =
+      cleanSingleLine(
+        body.subjectArea,
+        120
+      );
+
+    const level =
+      cleanSingleLine(
+        body.level,
+        120
+      );
+
+    const topic =
+      cleanSingleLine(
+        body.topic,
+        200
+      );
+
+    const goal =
+      cleanSingleLine(
+        body.goal,
+        500
+      );
+
+    const timing =
+      cleanSingleLine(
+        body.timing,
+        150
+      );
+
+    const message =
+      cleanMultiline(
+        body.message,
+        4000
+      );
+
+
+    /* ----------------------------------------------------------------------
+       Validate required fields
+       ---------------------------------------------------------------------- */
+
+    if (
+      !enquiryType ||
+      !name ||
+      !email ||
+      !goal
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+
+          error:
+            "Please complete all required fields.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+
+    if (
+      !isValidEmail(
+        email
+      )
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+
+          error:
+            "Please enter a valid email address.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Environment configuration
+       ---------------------------------------------------------------------- */
+
+    const resendApiKey =
+      process.env
+        .RESEND_API_KEY;
+
+    const contactToEmail =
+      process.env
+        .CONTACT_TO_EMAIL;
+
+    const contactFromEmail =
+      process.env
+        .CONTACT_FROM_EMAIL;
+
+
+    if (
+      !resendApiKey ||
+      !contactToEmail ||
+      !contactFromEmail
+    ) {
       console.error(
-        "Contact delivery failed:",
-        error
+        "Contact email configuration is incomplete."
       );
 
 
       return NextResponse.json(
         {
-          error:
-            "Your enquiry could not be delivered at the moment. Please try again shortly.",
-        },
+          ok: false,
 
+          error:
+            "Contact delivery is temporarily unavailable. Please try again later.",
+        },
+        {
+          status: 503,
+        }
+      );
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Build enquiry
+       ---------------------------------------------------------------------- */
+
+    const submissionId =
+      crypto.randomUUID();
+
+
+    const enquiry = {
+      enquiryType,
+      name,
+      email,
+      subjectArea,
+      level,
+      topic,
+      goal,
+      timing,
+      message,
+      submissionId,
+    };
+
+
+    const subject =
+      [
+        "[My Academic Tutor]",
+        enquiryType,
+
+        topic
+          ? `— ${topic}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+
+    const from =
+      contactFromEmail.includes(
+        "<"
+      )
+        ? contactFromEmail
+        : `My Academic Tutor <${contactFromEmail}>`;
+
+
+    /* ----------------------------------------------------------------------
+       Send via Resend
+       ---------------------------------------------------------------------- */
+
+    const resendResponse =
+      await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${resendApiKey}`,
+
+            "Content-Type":
+              "application/json",
+
+            /*
+             * Prevent accidental duplicate
+             * sends if the same request is
+             * retried.
+             */
+            "Idempotency-Key":
+              submissionId,
+          },
+
+          body:
+            JSON.stringify({
+              from,
+
+              to: [
+                contactToEmail,
+              ],
+
+              /*
+               * Clicking Reply in your
+               * inbox replies directly
+               * to the learner.
+               */
+              reply_to:
+                email,
+
+              subject,
+
+              text:
+                buildEmailText(
+                  enquiry
+                ),
+
+              html:
+                buildEmailHtml(
+                  enquiry
+                ),
+            }),
+        }
+      );
+
+
+    const resendData =
+      await resendResponse
+        .json()
+        .catch(
+          () => null
+        );
+
+
+    if (
+      !resendResponse.ok
+    ) {
+      console.error(
+        "Resend contact delivery failed:",
+        resendData
+      );
+
+
+      return NextResponse.json(
+        {
+          ok: false,
+
+          error:
+            "We could not send your enquiry. Please try again shortly.",
+        },
         {
           status: 502,
         }
       );
     }
-  }
 
 
-  /* ------------------------------------------------------------------------
-     8. Local development behaviour
-     ------------------------------------------------------------------------ */
+    /* ----------------------------------------------------------------------
+       Success
+       ---------------------------------------------------------------------- */
 
-  if (
-    process.env.NODE_ENV ===
-    "development"
-  ) {
-    /*
-     * We deliberately do NOT claim
-     * that an email was sent.
-     *
-     * The enquiry is printed in the
-     * local development terminal so
-     * the complete form workflow can
-     * be tested before an email /
-     * webhook service is connected.
-     */
+    return NextResponse.json(
+      {
+        ok: true,
 
-    console.info(
-      "\n========================================"
+        submissionId,
+
+        emailId:
+          resendData?.id ??
+          null,
+      }
     );
-
-    console.info(
-      "CONTACT FORM — DEVELOPMENT SUBMISSION"
-    );
-
-    console.info(
-      "========================================"
-    );
-
-    console.info(
-      JSON.stringify(
-        enquiry,
-        null,
-        2
-      )
-    );
-
-    console.info(
-      "========================================\n"
+  } catch (error) {
+    console.error(
+      "Unexpected contact route error:",
+      error
     );
 
 
     return NextResponse.json(
       {
-        success: true,
+        ok: false,
 
-        requestId,
-
-        development: true,
-
-        message:
-          "Development submission accepted. No external delivery service is configured.",
+        error:
+          "Something went wrong. Please try again.",
       },
-
       {
-        status: 200,
+        status: 500,
       }
     );
   }
-
-
-  /* ------------------------------------------------------------------------
-     9. Production without delivery
-     ------------------------------------------------------------------------ */
-
-  console.error(
-    "Contact form submission received, but CONTACT_WEBHOOK_URL is not configured."
-  );
-
-
-  return NextResponse.json(
-    {
-      error:
-        "Contact delivery is temporarily unavailable. Please try again later.",
-    },
-
-    {
-      status: 503,
-    }
-  );
 }
 
 
@@ -732,16 +886,12 @@ export async function POST(
 export async function GET() {
   return NextResponse.json(
     {
+      ok: false,
       error:
         "Method not allowed.",
     },
-
     {
       status: 405,
-
-      headers: {
-        Allow: "POST",
-      },
     }
   );
 }

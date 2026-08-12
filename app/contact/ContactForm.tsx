@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  type FormEvent,
+  FormEvent,
   useState,
 } from "react";
 
@@ -22,6 +22,12 @@ type FormState = {
   goal: string;
   timing: string;
   message: string;
+
+  /*
+   * Honeypot.
+   * Real visitors should never fill this.
+   */
+  website: string;
 };
 
 
@@ -33,17 +39,57 @@ type SubmitState =
 
 
 /* ==========================================================================
+   INITIAL STATE
+   ========================================================================== */
+
+const initialForm: FormState = {
+  enquiryType: "",
+  name: "",
+  email: "",
+  subjectArea: "",
+  level: "",
+  topic: "",
+  goal: "",
+  timing: "",
+  message: "",
+  website: "",
+};
+
+
+/* ==========================================================================
    OPTIONS
    ========================================================================== */
 
 const enquiryTypes = [
-  "Tutoring",
-  "Course enquiry",
-  "Learning direction",
-  "Research learning",
-  "Partnership",
-  "Technical issue",
-  "General enquiry",
+  {
+    value: "Tutoring",
+    label: "Expert tutoring",
+  },
+  {
+    value: "Course guidance",
+    label: "Course guidance",
+  },
+  {
+    value: "Learning pathway",
+    label: "Learning pathway",
+  },
+  {
+    value: "Research or postgraduate support",
+    label:
+      "Research or postgraduate support",
+  },
+  {
+    value: "Technical support",
+    label: "Technical support",
+  },
+  {
+    value: "Partnership or institution",
+    label: "Partnership or institution",
+  },
+  {
+    value: "General enquiry",
+    label: "General enquiry",
+  },
 ];
 
 
@@ -59,12 +105,12 @@ const subjectOptions = [
 
 
 const levelOptions = [
-  "High School",
+  "School",
   "Undergraduate",
   "Postgraduate",
   "Learn for Yourself",
   "Professional / Research",
-  "Not sure",
+  "Not sure yet",
 ];
 
 
@@ -77,17 +123,17 @@ const timingOptions = [
 ];
 
 
-const initialState: FormState = {
-  enquiryType: "",
-  name: "",
-  email: "",
-  subjectArea: "",
-  level: "",
-  topic: "",
-  goal: "",
-  timing: "",
-  message: "",
-};
+/* ==========================================================================
+   HELPERS
+   ========================================================================== */
+
+function validEmail(
+  email: string
+) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    email
+  );
+}
 
 
 /* ==========================================================================
@@ -98,119 +144,118 @@ export default function ContactForm() {
   const [
     form,
     setForm,
-  ] = useState<FormState>(
-    initialState
-  );
+  ] =
+    useState<FormState>(
+      initialForm
+    );
+
 
   const [
     submitState,
     setSubmitState,
-  ] = useState<SubmitState>(
-    "idle"
-  );
+  ] =
+    useState<SubmitState>(
+      "idle"
+    );
+
 
   const [
     errorMessage,
     setErrorMessage,
-  ] = useState("");
+  ] =
+    useState("");
 
 
-  /* ------------------------------------------------------------------------
-     Update helper
-     ------------------------------------------------------------------------ */
+  const [
+    submissionId,
+    setSubmissionId,
+  ] =
+    useState("");
+
+
+  /* ==========================================================================
+     FIELD UPDATE
+     ========================================================================== */
 
   function updateField(
     field: keyof FormState,
     value: string
   ) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setForm(
+      (current) => ({
+        ...current,
+        [field]: value,
+      })
+    );
+
 
     if (
-      submitState === "error"
+      submitState ===
+      "error"
     ) {
-      setSubmitState("idle");
+      setSubmitState(
+        "idle"
+      );
+
       setErrorMessage("");
     }
   }
 
 
-  /* ------------------------------------------------------------------------
-     Submit
-     ------------------------------------------------------------------------ */
+  /* ==========================================================================
+     SUBMIT
+     ========================================================================== */
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
+
+    /* ----------------------------------------------------------------------
+       Basic client validation
+       ---------------------------------------------------------------------- */
+
+    if (
+      !form.enquiryType ||
+      !form.name.trim() ||
+      !form.email.trim() ||
+      !form.goal.trim()
+    ) {
+      setSubmitState(
+        "error"
+      );
+
+      setErrorMessage(
+        "Please complete the required fields before sending your enquiry."
+      );
+
+      return;
+    }
+
+
+    if (
+      !validEmail(
+        form.email.trim()
+      )
+    ) {
+      setSubmitState(
+        "error"
+      );
+
+      setErrorMessage(
+        "Please enter a valid email address."
+      );
+
+      return;
+    }
+
+
     setSubmitState(
       "submitting"
     );
 
     setErrorMessage("");
-
-
-    /*
-     * Keep these conventional fields:
-     *
-     * name
-     * email
-     * subject
-     * message
-     *
-     * even though we also send richer structured information.
-     *
-     * This keeps the form easier to integrate with a simple
-     * contact API or email service.
-     */
-
-    const subject = [
-      form.enquiryType,
-      form.subjectArea,
-    ]
-      .filter(Boolean)
-      .join(" — ");
-
-
-    const structuredMessage = [
-      `Enquiry type: ${
-        form.enquiryType ||
-        "Not specified"
-      }`,
-
-      `Subject area: ${
-        form.subjectArea ||
-        "Not specified"
-      }`,
-
-      `Level: ${
-        form.level ||
-        "Not specified"
-      }`,
-
-      `Topic / challenge: ${
-        form.topic ||
-        "Not specified"
-      }`,
-
-      `Goal: ${
-        form.goal ||
-        "Not specified"
-      }`,
-
-      `Timing: ${
-        form.timing ||
-        "Not specified"
-      }`,
-
-      "",
-      "Additional details:",
-      form.message ||
-        "No additional details provided.",
-    ].join("\n");
 
 
     try {
@@ -225,76 +270,74 @@ export default function ContactForm() {
                 "application/json",
             },
 
-            body: JSON.stringify({
-              /*
-               * Basic fields for
-               * backwards compatibility
-               */
-              name: form.name,
-              email: form.email,
-              subject:
-                subject ||
-                "Website enquiry",
-              message:
-                structuredMessage,
+            body:
+              JSON.stringify({
+                enquiryType:
+                  form.enquiryType,
 
-              /*
-               * Structured fields
-               */
-              enquiryType:
-                form.enquiryType,
+                name:
+                  form.name.trim(),
 
-              subjectArea:
-                form.subjectArea,
+                email:
+                  form.email.trim(),
 
-              level:
-                form.level,
+                subjectArea:
+                  form.subjectArea,
 
-              topic:
-                form.topic,
+                level:
+                  form.level,
 
-              goal:
-                form.goal,
+                topic:
+                  form.topic.trim(),
 
-              timing:
-                form.timing,
+                goal:
+                  form.goal.trim(),
 
-              additionalMessage:
-                form.message,
-            }),
+                timing:
+                  form.timing,
+
+                message:
+                  form.message.trim(),
+
+                website:
+                  form.website,
+              }),
           }
         );
 
 
-      const responseData =
+      const data =
         await response
           .json()
-          .catch(() => null);
+          .catch(
+            () => null
+          );
 
 
-      if (!response.ok) {
-        const message =
-          responseData?.error ||
-          responseData?.message ||
-          "We couldn't send your enquiry. Please try again.";
-
-        throw new Error(message);
+      if (
+        !response.ok ||
+        !data?.ok
+      ) {
+        throw new Error(
+          data?.error ||
+            "We could not send your enquiry. Please try again."
+        );
       }
 
+
+      setSubmissionId(
+        data.submissionId ||
+          ""
+      );
 
       setSubmitState(
         "success"
       );
 
       setForm(
-        initialState
+        initialForm
       );
     } catch (error) {
-      console.error(
-        "Contact form error:",
-        error
-      );
-
       setSubmitState(
         "error"
       );
@@ -308,37 +351,55 @@ export default function ContactForm() {
   }
 
 
-  /* ------------------------------------------------------------------------
-     Success state
-     ------------------------------------------------------------------------ */
+  /* ==========================================================================
+     SUCCESS
+     ========================================================================== */
 
   if (
-    submitState === "success"
+    submitState ===
+    "success"
   ) {
     return (
-      <div className="contact-form-success">
-        <span className="contact-form-success-icon">
+      <div
+        className="contact-form-success"
+        role="status"
+      >
+        <div className="contact-success-icon">
           <Icon
             name="check"
-            size={22}
+            size={20}
           />
-        </span>
+        </div>
 
         <span className="eyebrow">
-          Enquiry received
+          Enquiry sent
         </span>
 
-        <h3>
-          Thanks for getting in touch.
-        </h3>
+        <h2>
+          Thanks for getting
+          <br />
+          in touch.
+        </h2>
 
         <p>
-          Your enquiry has been submitted.
-          We&apos;ll use the information
-          you provided to understand what
-          kind of response or support is
-          most appropriate.
+          Your enquiry has been
+          received. We&apos;ll review
+          what you&apos;re looking for
+          and respond using the email
+          address you provided.
         </p>
+
+        {submissionId && (
+          <div className="contact-submission-reference">
+            <span>
+              Reference
+            </span>
+
+            <code>
+              {submissionId}
+            </code>
+          </div>
+        )}
 
         <button
           type="button"
@@ -348,7 +409,9 @@ export default function ContactForm() {
               "idle"
             );
 
-            setErrorMessage("");
+            setSubmissionId(
+              ""
+            );
           }}
         >
           Send another enquiry
@@ -364,56 +427,74 @@ export default function ContactForm() {
 
   return (
     <form
-      className="form-card contact-enquiry-form"
-      onSubmit={handleSubmit}
+      className="contact-enquiry-form"
+      onSubmit={
+        handleSubmit
+      }
+      noValidate
     >
-      {/* ------------------------------------------------------------------
-          Form introduction
-         ------------------------------------------------------------------ */}
+      {/* ==================================================================
+          HONEYPOT
+         ================================================================== */}
 
-      <div className="contact-enquiry-form-head">
-        <span className="eyebrow">
-          Enquiry details
-        </span>
+      <div
+        className="contact-honeypot"
+        aria-hidden="true"
+      >
+        <label htmlFor="website">
+          Website
+        </label>
 
-        <h3>
-          How can we help?
-        </h3>
-
-        <p>
-          Fields marked with * are
-          required. The extra context
-          helps us understand your
-          request before responding.
-        </p>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          value={
+            form.website
+          }
+          onChange={(event) =>
+            updateField(
+              "website",
+              event.target.value
+            )
+          }
+          autoComplete="off"
+          tabIndex={-1}
+        />
       </div>
 
 
       {/* ==================================================================
-          1. ENQUIRY TYPE
+          01 — ENQUIRY TYPE
          ================================================================== */}
 
-      <div className="contact-form-section">
-        <div className="contact-form-section-head">
+      <section className="contact-form-section">
+        <div className="contact-form-section-heading">
           <span>
             01
           </span>
 
           <div>
             <strong>
-              Type of enquiry
+              What can we help
+              with?
             </strong>
 
-            <small>
-              What is the main reason
-              you are contacting us?
-            </small>
+            <p>
+              Choose the option that
+              best describes your
+              enquiry.
+            </p>
           </div>
         </div>
 
-        <div className="form-field">
+
+        <div className="contact-form-field">
           <label htmlFor="enquiryType">
-            Enquiry type *
+            Enquiry type
+            <em>
+              Required
+            </em>
           </label>
 
           <select
@@ -437,24 +518,28 @@ export default function ContactForm() {
             {enquiryTypes.map(
               (option) => (
                 <option
-                  key={option}
-                  value={option}
+                  key={
+                    option.value
+                  }
+                  value={
+                    option.value
+                  }
                 >
-                  {option}
+                  {option.label}
                 </option>
               )
             )}
           </select>
         </div>
-      </div>
+      </section>
 
 
       {/* ==================================================================
-          2. CONTACT DETAILS
+          02 — YOUR DETAILS
          ================================================================== */}
 
-      <div className="contact-form-section">
-        <div className="contact-form-section-head">
+      <section className="contact-form-section">
+        <div className="contact-form-section-heading">
           <span>
             02
           </span>
@@ -464,68 +549,82 @@ export default function ContactForm() {
               Your details
             </strong>
 
-            <small>
-              So we know who we are
-              responding to.
-            </small>
+            <p>
+              Tell us who we&apos;re
+              speaking with and where
+              we should reply.
+            </p>
           </div>
         </div>
 
-        <div className="form-grid">
-          <div className="form-field">
+
+        <div className="contact-form-grid">
+          <div className="contact-form-field">
             <label htmlFor="name">
-              Name *
+              Name
+              <em>
+                Required
+              </em>
             </label>
 
             <input
               id="name"
               name="name"
               type="text"
-              autoComplete="name"
-              required
-              placeholder="Your name"
-              value={form.name}
+              value={
+                form.name
+              }
               onChange={(event) =>
                 updateField(
                   "name",
                   event.target.value
                 )
               }
+              placeholder="Your name"
+              autoComplete="name"
+              maxLength={120}
+              required
             />
           </div>
 
 
-          <div className="form-field">
+          <div className="contact-form-field">
             <label htmlFor="email">
-              Email *
+              Email
+              <em>
+                Required
+              </em>
             </label>
 
             <input
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
-              required
-              placeholder="you@example.com"
-              value={form.email}
+              value={
+                form.email
+              }
               onChange={(event) =>
                 updateField(
                   "email",
                   event.target.value
                 )
               }
+              placeholder="you@example.com"
+              autoComplete="email"
+              maxLength={200}
+              required
             />
           </div>
         </div>
-      </div>
+      </section>
 
 
       {/* ==================================================================
-          3. LEARNING CONTEXT
+          03 — LEARNING CONTEXT
          ================================================================== */}
 
-      <div className="contact-form-section">
-        <div className="contact-form-section-head">
+      <section className="contact-form-section">
+        <div className="contact-form-section-heading">
           <span>
             03
           </span>
@@ -535,15 +634,17 @@ export default function ContactForm() {
               Learning context
             </strong>
 
-            <small>
-              Tell us where your
-              enquiry sits academically.
-            </small>
+            <p>
+              A little context helps
+              us give you a more useful
+              response.
+            </p>
           </div>
         </div>
 
-        <div className="form-grid">
-          <div className="form-field">
+
+        <div className="contact-form-grid">
+          <div className="contact-form-field">
             <label htmlFor="subjectArea">
               Subject
             </label>
@@ -566,12 +667,16 @@ export default function ContactForm() {
               </option>
 
               {subjectOptions.map(
-                (option) => (
+                (subject) => (
                   <option
-                    key={option}
-                    value={option}
+                    key={
+                      subject
+                    }
+                    value={
+                      subject
+                    }
                   >
-                    {option}
+                    {subject}
                   </option>
                 )
               )}
@@ -579,15 +684,17 @@ export default function ContactForm() {
           </div>
 
 
-          <div className="form-field">
+          <div className="contact-form-field">
             <label htmlFor="level">
-              Current level
+              Level
             </label>
 
             <select
               id="level"
               name="level"
-              value={form.level}
+              value={
+                form.level
+              }
               onChange={(event) =>
                 updateField(
                   "level",
@@ -600,12 +707,16 @@ export default function ContactForm() {
               </option>
 
               {levelOptions.map(
-                (option) => (
+                (level) => (
                   <option
-                    key={option}
-                    value={option}
+                    key={
+                      level
+                    }
+                    value={
+                      level
+                    }
                   >
-                    {option}
+                    {level}
                   </option>
                 )
               )}
@@ -614,110 +725,126 @@ export default function ContactForm() {
         </div>
 
 
-        <div className="form-field">
+        <div className="contact-form-field">
           <label htmlFor="topic">
-            Topic or challenge
+            Topic or course
           </label>
 
           <input
             id="topic"
             name="topic"
             type="text"
-            placeholder="For example: logistic regression, RNA-seq, calculus, Python debugging..."
-            value={form.topic}
+            value={
+              form.topic
+            }
             onChange={(event) =>
               updateField(
                 "topic",
                 event.target.value
               )
             }
+            placeholder="For example: regression, Python, calculus, RNA-seq..."
+            maxLength={200}
           />
-
-          <small className="form-help">
-            A specific topic helps us
-            understand your request more
-            quickly.
-          </small>
         </div>
-      </div>
+      </section>
 
 
       {/* ==================================================================
-          4. GOAL
+          04 — GOAL
          ================================================================== */}
 
-      <div className="contact-form-section">
-        <div className="contact-form-section-head">
+      <section className="contact-form-section">
+        <div className="contact-form-section-heading">
           <span>
             04
           </span>
 
           <div>
             <strong>
-              Your goal
+              What would you like
+              to achieve?
             </strong>
 
-            <small>
-              What would a useful
-              outcome look like?
-            </small>
+            <p>
+              Describe the outcome
+              you&apos;re working
+              towards.
+            </p>
           </div>
         </div>
 
-        <div className="form-field">
+
+        <div className="contact-form-field">
           <label htmlFor="goal">
-            What are you trying to achieve? *
+            Your goal
+            <em>
+              Required
+            </em>
           </label>
 
           <textarea
             id="goal"
             name="goal"
-            required
-            rows={4}
-            placeholder="For example: understand a university module, prepare for an exam, learn a research method, build career skills..."
-            value={form.goal}
+            value={
+              form.goal
+            }
             onChange={(event) =>
               updateField(
                 "goal",
                 event.target.value
               )
             }
+            placeholder="Tell us what you want to understand, prepare for, complete or improve."
+            rows={5}
+            maxLength={500}
+            required
           />
+
+          <div className="contact-field-counter">
+            {form.goal.length}
+            /500
+          </div>
         </div>
-      </div>
+      </section>
 
 
       {/* ==================================================================
-          5. TIMING
+          05 — TIMING + MESSAGE
          ================================================================== */}
 
-      <div className="contact-form-section">
-        <div className="contact-form-section-head">
+      <section className="contact-form-section">
+        <div className="contact-form-section-heading">
           <span>
             05
           </span>
 
           <div>
             <strong>
-              Timing
+              Anything else?
             </strong>
 
-            <small>
-              Is there an important
-              deadline or timeframe?
-            </small>
+            <p>
+              Add timing or other
+              information that could
+              help us understand the
+              enquiry.
+            </p>
           </div>
         </div>
 
-        <div className="form-field">
+
+        <div className="contact-form-field">
           <label htmlFor="timing">
-            Preferred timing
+            Timing
           </label>
 
           <select
             id="timing"
             name="timing"
-            value={form.timing}
+            value={
+              form.timing
+            }
             onChange={(event) =>
               updateField(
                 "timing",
@@ -726,48 +853,28 @@ export default function ContactForm() {
             }
           >
             <option value="">
-              Select a timeframe
+              Select if relevant
             </option>
 
             {timingOptions.map(
-              (option) => (
+              (timing) => (
                 <option
-                  key={option}
-                  value={option}
+                  key={
+                    timing
+                  }
+                  value={
+                    timing
+                  }
                 >
-                  {option}
+                  {timing}
                 </option>
               )
             )}
           </select>
         </div>
-      </div>
 
 
-      {/* ==================================================================
-          6. ADDITIONAL DETAIL
-         ================================================================== */}
-
-      <div className="contact-form-section">
-        <div className="contact-form-section-head">
-          <span>
-            06
-          </span>
-
-          <div>
-            <strong>
-              Anything else?
-            </strong>
-
-            <small>
-              Add any context that
-              would help us understand
-              the enquiry.
-            </small>
-          </div>
-        </div>
-
-        <div className="form-field">
+        <div className="contact-form-field">
           <label htmlFor="message">
             Additional details
           </label>
@@ -775,22 +882,30 @@ export default function ContactForm() {
           <textarea
             id="message"
             name="message"
-            rows={6}
-            placeholder="Include any other useful context. Please do not submit sensitive personal data or confidential datasets through this form."
-            value={form.message}
+            value={
+              form.message
+            }
             onChange={(event) =>
               updateField(
                 "message",
                 event.target.value
               )
             }
+            placeholder="Add any useful background, questions or requirements."
+            rows={7}
+            maxLength={4000}
           />
+
+          <div className="contact-field-counter">
+            {form.message.length}
+            /4000
+          </div>
         </div>
-      </div>
+      </section>
 
 
       {/* ==================================================================
-          ERROR STATE
+          ERROR
          ================================================================== */}
 
       {submitState ===
@@ -799,20 +914,14 @@ export default function ContactForm() {
           className="contact-form-error"
           role="alert"
         >
-          <span>
-            !
-          </span>
+          <strong>
+            We couldn&apos;t send
+            your enquiry.
+          </strong>
 
-          <div>
-            <strong>
-              We couldn&apos;t send
-              your enquiry.
-            </strong>
-
-            <p>
-              {errorMessage}
-            </p>
-          </div>
+          <p>
+            {errorMessage}
+          </p>
         </div>
       )}
 
@@ -828,11 +937,11 @@ export default function ContactForm() {
           </strong>
 
           <p>
-            By submitting this form,
-            you are asking us to
-            respond to your enquiry
-            using the contact details
-            provided.
+            We&apos;ll use the
+            information you provide
+            only to handle your
+            enquiry in line with our
+            Privacy Notice.
           </p>
         </div>
 
