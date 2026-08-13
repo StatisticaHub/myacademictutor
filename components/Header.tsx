@@ -338,7 +338,7 @@ export default function Header() {
               <span>Account</span>
 
               <Link
-                href="/dashboard"
+                href="/login"
                 onClick={closeMobileMenu}
               >
                 Sign in
