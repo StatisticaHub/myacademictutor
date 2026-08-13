@@ -26,8 +26,23 @@ type LoginPageProps = {
     mode?: string;
     error?: string;
     message?: string;
+    next?: string;
   }>;
 };
+
+
+function safeNext(
+  value?: string
+) {
+  if (
+    value?.startsWith("/") &&
+    !value.startsWith("//")
+  ) {
+    return value;
+  }
+
+  return "/dashboard";
+}
 
 
 export default async function LoginPage({
@@ -38,6 +53,25 @@ export default async function LoginPage({
 
   const signupMode =
     params.mode === "signup";
+
+  const next =
+    safeNext(
+      params.next
+    );
+
+
+  const signInHref =
+    next === "/dashboard"
+      ? "/login"
+      : `/login?next=${encodeURIComponent(
+          next
+        )}`;
+
+
+  const signupHref =
+    `/login?mode=signup&next=${encodeURIComponent(
+      next
+    )}`;
 
 
   return (
@@ -66,6 +100,7 @@ export default async function LoginPage({
 
 
           <div className="auth-points">
+
             <div>
               <strong>
                 01
@@ -76,6 +111,7 @@ export default async function LoginPage({
                 courses
               </span>
             </div>
+
 
             <div>
               <strong>
@@ -88,6 +124,7 @@ export default async function LoginPage({
               </span>
             </div>
 
+
             <div>
               <strong>
                 03
@@ -98,6 +135,7 @@ export default async function LoginPage({
                 left off
               </span>
             </div>
+
           </div>
         </section>
 
@@ -107,8 +145,9 @@ export default async function LoginPage({
         <section className="auth-card">
 
           <div className="auth-tabs">
+
             <Link
-              href="/login"
+              href={signInHref}
               className={
                 !signupMode
                   ? "active"
@@ -118,8 +157,9 @@ export default async function LoginPage({
               Sign in
             </Link>
 
+
             <Link
-              href="/login?mode=signup"
+              href={signupHref}
               className={
                 signupMode
                   ? "active"
@@ -128,15 +168,18 @@ export default async function LoginPage({
             >
               Create account
             </Link>
+
           </div>
 
 
           <div className="auth-card-heading">
+
             <span className="eyebrow">
               {signupMode
                 ? "New learner"
                 : "Welcome back"}
             </span>
+
 
             <h2>
               {signupMode
@@ -144,11 +187,13 @@ export default async function LoginPage({
                 : "Sign in to continue"}
             </h2>
 
+
             <p>
               {signupMode
                 ? "Create a learner account to enrol in courses and track your progress."
                 : "Enter your details to return to your learning dashboard."}
             </p>
+
           </div>
 
 
@@ -168,8 +213,16 @@ export default async function LoginPage({
 
           <form className="auth-form">
 
+            <input
+              type="hidden"
+              name="next"
+              value={next}
+            />
+
+
             {signupMode && (
               <div className="auth-field">
+
                 <label htmlFor="fullName">
                   Full name
                 </label>
@@ -182,11 +235,13 @@ export default async function LoginPage({
                   autoComplete="name"
                   required
                 />
+
               </div>
             )}
 
 
             <div className="auth-field">
+
               <label htmlFor="email">
                 Email address
               </label>
@@ -199,10 +254,12 @@ export default async function LoginPage({
                 autoComplete="email"
                 required
               />
+
             </div>
 
 
             <div className="auth-field">
+
               <label htmlFor="password">
                 Password
               </label>
@@ -224,6 +281,7 @@ export default async function LoginPage({
                 }
                 required
               />
+
             </div>
 
 
@@ -245,17 +303,20 @@ export default async function LoginPage({
 
 
           <div className="auth-bottom">
+
             {signupMode ? (
               <p>
                 Already have an account?{" "}
-                <Link href="/login">
+
+                <Link href={signInHref}>
                   Sign in
                 </Link>
               </p>
             ) : (
               <p>
                 New to My Academic Tutor?{" "}
-                <Link href="/login?mode=signup">
+
+                <Link href={signupHref}>
                   Create an account
                 </Link>
               </p>
@@ -263,16 +324,19 @@ export default async function LoginPage({
 
 
             <p className="auth-legal">
-              By continuing, you agree to
-              our{" "}
+              By continuing, you agree to our{" "}
+
               <Link href="/terms">
                 Terms
-              </Link>{" "}
-              and{" "}
+              </Link>
+
+              {" "}and{" "}
+
               <Link href="/privacy">
                 Privacy Notice
               </Link>.
             </p>
+
           </div>
 
         </section>

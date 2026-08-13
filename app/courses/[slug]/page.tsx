@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import CourseCard from "@/components/CourseCard";
+import CourseEnrollAction from "@/components/CourseEnrollAction";
 import Icon from "@/components/Icon";
 import SectionHeading from "@/components/SectionHeading";
 
@@ -47,13 +49,20 @@ export async function generateMetadata({
     };
   }
 
-  const subject = getSubject(course.subject);
-  const level = getLevel(course.level);
+  const subject = getSubject(
+    course.subject
+  );
+
+  const level = getLevel(
+    course.level
+  );
+
 
   return {
     title: course.title,
 
-    description: course.description,
+    description:
+      course.description,
 
     openGraph: {
       title:
@@ -77,7 +86,9 @@ export async function generateMetadata({
    LEVEL HELPERS
    ========================================================================== */
 
-function getLevelLabel(level: string) {
+function getLevelLabel(
+  level: string
+) {
   switch (level) {
     case "high-school":
       return "High School";
@@ -97,11 +108,14 @@ function getLevelLabel(level: string) {
 }
 
 
-function getRecommendedBackground(level: string) {
+function getRecommendedBackground(
+  level: string
+) {
   switch (level) {
     case "high-school":
       return {
-        title: "Beginner-friendly",
+        title:
+          "Beginner-friendly",
 
         copy:
           "No advanced prior knowledge is expected. The course is designed to build understanding step by step.",
@@ -109,7 +123,8 @@ function getRecommendedBackground(level: string) {
 
     case "undergraduate":
       return {
-        title: "University foundations",
+        title:
+          "University foundations",
 
         copy:
           "Some familiarity with basic quantitative reasoning is useful, but important concepts are developed carefully throughout the course.",
@@ -117,7 +132,8 @@ function getRecommendedBackground(level: string) {
 
     case "postgraduate":
       return {
-        title: "Advanced study",
+        title:
+          "Advanced study",
 
         copy:
           "This course is best suited to learners with relevant undergraduate-level foundations or equivalent practical experience.",
@@ -125,7 +141,8 @@ function getRecommendedBackground(level: string) {
 
     case "casual":
       return {
-        title: "Flexible entry",
+        title:
+          "Flexible entry",
 
         copy:
           "Designed for independent learners. Start with the foundations and progress at your own pace.",
@@ -133,7 +150,8 @@ function getRecommendedBackground(level: string) {
 
     default:
       return {
-        title: "Structured learning",
+        title:
+          "Structured learning",
 
         copy:
           "Follow the course progressively from the opening module.",
@@ -153,28 +171,42 @@ export default async function CoursePage({
     slug: string;
   }>;
 }) {
-  const { slug } = await params;
+  const { slug } =
+    await params;
 
-  const course = getCourse(slug);
+  const course =
+    getCourse(slug);
+
 
   if (!course) {
     notFound();
   }
 
-  const subject = getSubject(
-    course.subject
-  );
 
-  const learningLevel = getLevel(
-    course.level
-  );
+  const subject =
+    getSubject(
+      course.subject
+    );
 
-  if (!subject || !learningLevel) {
+  const level =
+    getLevel(
+      course.level
+    );
+
+
+  if (
+    !subject ||
+    !level
+  ) {
     notFound();
   }
 
+
   const recommendations =
-    relatedCourses(course.slug, 3);
+    relatedCourses(
+      course.slug,
+      3
+    );
 
   const background =
     getRecommendedBackground(
@@ -182,25 +214,31 @@ export default async function CoursePage({
     );
 
   const levelLabel =
-    getLevelLabel(course.level);
+    getLevelLabel(
+      course.level
+    );
 
 
   return (
     <>
+
       {/* ==================================================================
           HERO
          ================================================================== */}
 
       <section className="page-hero">
         <div className="shell course-hero">
+
           {/* --------------------------------------------------------------
-              Main hero
+              MAIN HERO
              -------------------------------------------------------------- */}
 
           <div>
+
             <div className="breadcrumbs">
               Home / Courses / {course.title}
             </div>
+
 
             <div
               style={{
@@ -211,6 +249,7 @@ export default async function CoursePage({
                 marginTop: "30px",
               }}
             >
+
               <Link
                 href={`/subjects/${subject.slug}`}
                 className={`mini-symbol ${subject.accent}`}
@@ -219,9 +258,11 @@ export default async function CoursePage({
                 {subject.symbol}
               </Link>
 
+
               <span className="eyebrow">
                 {subject.name}
               </span>
+
 
               <span
                 style={{
@@ -233,20 +274,35 @@ export default async function CoursePage({
                 •
               </span>
 
+
               <span className="eyebrow">
                 {levelLabel}
               </span>
+
             </div>
+
 
             <h1>
               {course.title}
             </h1>
 
+
             <p>
               {course.description}
             </p>
 
+
+            {/* REAL LEARNER ENROLMENT */}
+
+            <CourseEnrollAction
+              courseSlug={
+                course.slug
+              }
+            />
+
+
             <div className="hero-actions">
+
               <Link
                 href="#curriculum"
                 className="button"
@@ -259,15 +315,19 @@ export default async function CoursePage({
                 />
               </Link>
 
+
               <Link
                 href="/contact"
                 className="button button-outline"
               >
                 Ask about this course
               </Link>
+
             </div>
 
+
             <div className="hero-proof">
+
               <span>
                 <Icon
                   name="check"
@@ -276,6 +336,7 @@ export default async function CoursePage({
 
                 {course.lessons} lessons
               </span>
+
 
               <span>
                 <Icon
@@ -286,6 +347,7 @@ export default async function CoursePage({
                 {course.duration}
               </span>
 
+
               <span>
                 <Icon
                   name="check"
@@ -295,6 +357,7 @@ export default async function CoursePage({
                 {course.modules.length} modules
               </span>
 
+
               <span>
                 <Icon
                   name="check"
@@ -303,18 +366,22 @@ export default async function CoursePage({
 
                 {levelLabel}
               </span>
+
             </div>
+
           </div>
 
 
           {/* --------------------------------------------------------------
-              Course summary card
+              COURSE SUMMARY CARD
              -------------------------------------------------------------- */}
 
           <aside className="course-hero-card">
+
             <span className="eyebrow light">
               Course overview
             </span>
+
 
             <div
               className={`mini-symbol ${subject.accent}`}
@@ -328,9 +395,11 @@ export default async function CoursePage({
               {subject.symbol}
             </div>
 
+
             <h3>
               {course.title}
             </h3>
+
 
             <p
               style={{
@@ -339,10 +408,15 @@ export default async function CoursePage({
                 lineHeight: 1.65,
               }}
             >
-              A structured {levelLabel.toLowerCase()} course in{" "}
-              {subject.name}, designed around understanding,
-              progressive practice and practical application.
+              A structured{" "}
+              {levelLabel.toLowerCase()}{" "}
+              course in {subject.name},
+              designed around
+              understanding, progressive
+              practice and practical
+              application.
             </p>
+
 
             <div
               style={{
@@ -351,13 +425,16 @@ export default async function CoursePage({
                 marginTop: "24px",
               }}
             >
+
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
+                  justifyContent:
+                    "space-between",
                   gap: "20px",
                   paddingBottom: "10px",
-                  borderBottom: "1px solid #2e2e2e",
+                  borderBottom:
+                    "1px solid #2e2e2e",
                 }}
               >
                 <span
@@ -378,13 +455,16 @@ export default async function CoursePage({
                 </strong>
               </div>
 
+
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
+                  justifyContent:
+                    "space-between",
                   gap: "20px",
                   paddingBottom: "10px",
-                  borderBottom: "1px solid #2e2e2e",
+                  borderBottom:
+                    "1px solid #2e2e2e",
                 }}
               >
                 <span
@@ -405,13 +485,16 @@ export default async function CoursePage({
                 </strong>
               </div>
 
+
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
+                  justifyContent:
+                    "space-between",
                   gap: "20px",
                   paddingBottom: "10px",
-                  borderBottom: "1px solid #2e2e2e",
+                  borderBottom:
+                    "1px solid #2e2e2e",
                 }}
               >
                 <span
@@ -432,10 +515,12 @@ export default async function CoursePage({
                 </strong>
               </div>
 
+
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
+                  justifyContent:
+                    "space-between",
                   gap: "20px",
                 }}
               >
@@ -456,17 +541,19 @@ export default async function CoursePage({
                   {course.duration}
                 </strong>
               </div>
+
             </div>
 
+
             <Link
-              href="/contact"
+              href="#curriculum"
               className="button button-white"
               style={{
                 width: "100%",
                 marginTop: "26px",
               }}
             >
-              Register interest
+              View curriculum
 
               <Icon
                 name="arrow"
@@ -474,18 +561,23 @@ export default async function CoursePage({
               />
             </Link>
 
+
             <p
               style={{
                 margin: "13px 0 0",
                 color: "#77736d",
                 fontSize: "9px",
                 textAlign: "center",
+                lineHeight: 1.5,
               }}
             >
-              Course access and enrolment options will be
-              shown here when available.
+              Start the course to add it
+              to your learner dashboard
+              and track your progress.
             </p>
+
           </aside>
+
         </div>
       </section>
 
@@ -496,6 +588,7 @@ export default async function CoursePage({
 
       <section className="trust-strip">
         <div className="shell">
+
           <div
             style={{
               display: "flex",
@@ -504,18 +597,22 @@ export default async function CoursePage({
               gap: "9px",
             }}
           >
+
             <span
               style={{
                 marginRight: "6px",
                 color: "#8b867e",
                 fontSize: "9px",
                 fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: ".13em",
+                textTransform:
+                  "uppercase",
+                letterSpacing:
+                  ".13em",
               }}
             >
               Course
             </span>
+
 
             <Link
               href="#overview"
@@ -524,12 +621,14 @@ export default async function CoursePage({
               Overview
             </Link>
 
+
             <Link
               href="#skills"
               className="filter-link"
             >
               Skills
             </Link>
+
 
             <Link
               href="#curriculum"
@@ -538,6 +637,7 @@ export default async function CoursePage({
               Curriculum
             </Link>
 
+
             <Link
               href="#approach"
               className="filter-link"
@@ -545,13 +645,16 @@ export default async function CoursePage({
               Learning approach
             </Link>
 
+
             <Link
               href="#support"
               className="filter-link"
             >
               Tutor support
             </Link>
+
           </div>
+
         </div>
       </section>
 
@@ -565,14 +668,20 @@ export default async function CoursePage({
         id="overview"
       >
         <div className="shell">
+
           <SectionHeading
             eyebrow="Course overview"
             title="Know what you are learning—and why."
-            description={course.description}
+            description={
+              course.description
+            }
           />
 
+
           <div className="feature-list">
+
             <div className="feature-item">
+
               <span
                 className={`mini-symbol ${subject.accent}`}
               >
@@ -592,13 +701,18 @@ export default async function CoursePage({
                     lineHeight: 1.6,
                   }}
                 >
-                  Move through topics in a logical order rather
-                  than learning isolated techniques.
+                  Move through topics in a
+                  logical order rather than
+                  learning isolated
+                  techniques.
                 </p>
               </div>
+
             </div>
 
+
             <div className="feature-item">
+
               <span
                 className={`mini-symbol ${subject.accent}`}
               >
@@ -618,13 +732,18 @@ export default async function CoursePage({
                     lineHeight: 1.6,
                   }}
                 >
-                  Build conceptual understanding before moving
-                  into procedures, calculations or code.
+                  Build conceptual
+                  understanding before
+                  moving into procedures,
+                  calculations or code.
                 </p>
               </div>
+
             </div>
 
+
             <div className="feature-item">
+
               <span
                 className={`mini-symbol ${subject.accent}`}
               >
@@ -644,13 +763,17 @@ export default async function CoursePage({
                     lineHeight: 1.6,
                   }}
                 >
-                  Reinforce learning through examples, exercises
-                  and practical applications.
+                  Reinforce learning through
+                  examples, exercises and
+                  practical applications.
                 </p>
               </div>
+
             </div>
 
+
             <div className="feature-item">
+
               <span
                 className={`mini-symbol ${subject.accent}`}
               >
@@ -670,12 +793,17 @@ export default async function CoursePage({
                     lineHeight: 1.6,
                   }}
                 >
-                  See where this course fits within the wider{" "}
-                  {subject.name} learning journey.
+                  See where this course fits
+                  within the wider{" "}
+                  {subject.name} learning
+                  journey.
                 </p>
               </div>
+
             </div>
+
           </div>
+
         </div>
       </section>
 
@@ -689,50 +817,71 @@ export default async function CoursePage({
         id="skills"
       >
         <div className="shell">
+
           <SectionHeading
             eyebrow="Skills you will build"
             title="Finish with capability, not just content watched."
             description="The course is organised around the knowledge and practical abilities you should develop as you progress."
           />
 
+
           <div className="feature-list">
+
             {course.skills.map(
-              (skill, index) => (
+              (
+                skill,
+                index
+              ) => (
                 <div
                   className="feature-item"
                   key={skill}
                 >
+
                   <span
                     className={`mini-symbol ${subject.accent}`}
                   >
-                    {String(index + 1).padStart(
+                    {String(
+                      index + 1
+                    ).padStart(
                       2,
                       "0"
                     )}
                   </span>
 
+
                   <div>
+
                     <strong>
                       {skill}
                     </strong>
 
                     <p
                       style={{
-                        margin: "5px 0 0",
-                        color: "#6d6961",
-                        fontSize: "12px",
-                        lineHeight: 1.6,
+                        margin:
+                          "5px 0 0",
+                        color:
+                          "#6d6961",
+                        fontSize:
+                          "12px",
+                        lineHeight:
+                          1.6,
                       }}
                     >
-                      Develop this skill progressively
-                      through explanation, examples and
-                      application throughout the course.
+                      Develop this skill
+                      progressively through
+                      explanation, examples
+                      and application
+                      throughout the course.
                     </p>
+
                   </div>
+
                 </div>
               )
             )}
+
           </div>
+
         </div>
       </section>
 
@@ -746,31 +895,44 @@ export default async function CoursePage({
         id="curriculum"
       >
         <div className="shell">
+
           <SectionHeading
             eyebrow="Course curriculum"
             title={`${course.modules.length} modules. One coherent journey.`}
             description={`Work through the curriculum in sequence to build a complete understanding of ${course.title}.`}
           />
 
+
           <div className="module-list">
+
             {course.modules.map(
-              (module, index) => (
+              (
+                module,
+                index
+              ) => (
                 <div
                   className="module-row"
                   key={module}
                 >
+
                   <span className="module-num">
-                    {String(index + 1).padStart(
+                    {String(
+                      index + 1
+                    ).padStart(
                       2,
                       "0"
                     )}
                   </span>
 
+
                   <div>
+
                     <strong
                       style={{
-                        display: "block",
-                        fontSize: "13px",
+                        display:
+                          "block",
+                        fontSize:
+                          "13px",
                       }}
                     >
                       {module}
@@ -778,15 +940,22 @@ export default async function CoursePage({
 
                     <small
                       style={{
-                        display: "block",
-                        marginTop: "3px",
-                        color: "#858077",
-                        fontSize: "10px",
+                        display:
+                          "block",
+                        marginTop:
+                          "3px",
+                        color:
+                          "#858077",
+                        fontSize:
+                          "10px",
                       }}
                     >
-                      Concepts · Examples · Practice
+                      Concepts · Examples ·
+                      Practice
                     </small>
+
                   </div>
+
 
                   <span
                     style={{
@@ -797,10 +966,13 @@ export default async function CoursePage({
                   >
                     Module {index + 1}
                   </span>
+
                 </div>
               )
             )}
+
           </div>
+
         </div>
       </section>
 
@@ -811,14 +983,22 @@ export default async function CoursePage({
 
       <section className="section dark">
         <div className="shell">
+
           <SectionHeading
             eyebrow="Before you start"
-            title={background.title}
-            description={background.copy}
+            title={
+              background.title
+            }
+            description={
+              background.copy
+            }
           />
 
+
           <div className="level-grid">
+
             <div className="level-card course-dark-card">
+
               <span className="num">
                 01
               </span>
@@ -828,16 +1008,22 @@ export default async function CoursePage({
               </h3>
 
               <small>
-                No need to know everything
+                No need to know
+                everything
               </small>
 
               <p>
-                Use the course structure to identify gaps and
-                build missing foundations progressively.
+                Use the course structure
+                to identify gaps and build
+                missing foundations
+                progressively.
               </p>
+
             </div>
 
+
             <div className="level-card course-dark-card">
+
               <span className="num">
                 02
               </span>
@@ -851,12 +1037,17 @@ export default async function CoursePage({
               </small>
 
               <p>
-                Pause, calculate, code, explain and solve rather
-                than treating lessons as passive video content.
+                Pause, calculate, code,
+                explain and solve rather
+                than treating lessons as
+                passive video content.
               </p>
+
             </div>
 
+
             <div className="level-card course-dark-card">
+
               <span className="num">
                 03
               </span>
@@ -866,16 +1057,23 @@ export default async function CoursePage({
               </h3>
 
               <small>
-                Confusion is useful information
+                Confusion is useful
+                information
               </small>
 
               <p>
-                Identify exactly where your understanding breaks
-                down and revisit the concept or seek expert help.
+                Identify exactly where
+                your understanding breaks
+                down and revisit the
+                concept or seek expert
+                help.
               </p>
+
             </div>
 
+
             <div className="level-card course-dark-card">
+
               <span className="num">
                 04
               </span>
@@ -889,11 +1087,16 @@ export default async function CoursePage({
               </small>
 
               <p>
-                Use the ideas in your own problems, assignments,
-                projects, analyses or research.
+                Use the ideas in your own
+                problems, assignments,
+                projects, analyses or
+                research.
               </p>
+
             </div>
+
           </div>
+
         </div>
       </section>
 
@@ -907,14 +1110,18 @@ export default async function CoursePage({
         id="approach"
       >
         <div className="shell">
+
           <SectionHeading
             eyebrow="Learning approach"
             title="From explanation to independent application."
             description="The goal is not simply to finish lessons. The goal is to reach the point where you can use the ideas without being guided through every step."
           />
 
+
           <div className="level-grid">
+
             <div className="level-card">
+
               <span className="num">
                 01
               </span>
@@ -928,12 +1135,16 @@ export default async function CoursePage({
               </small>
 
               <p>
-                Start with intuitive explanation and build the
+                Start with intuitive
+                explanation and build the
                 underlying reasoning.
               </p>
+
             </div>
 
+
             <div className="level-card">
+
               <span className="num">
                 02
               </span>
@@ -947,12 +1158,18 @@ export default async function CoursePage({
               </small>
 
               <p>
-                Connect abstract ideas to examples, diagrams,
-                computation and interactive demonstrations.
+                Connect abstract ideas to
+                examples, diagrams,
+                computation and
+                interactive
+                demonstrations.
               </p>
+
             </div>
 
+
             <div className="level-card">
+
               <span className="num">
                 03
               </span>
@@ -966,12 +1183,17 @@ export default async function CoursePage({
               </small>
 
               <p>
-                Work through progressively more challenging
-                questions and applications.
+                Work through
+                progressively more
+                challenging questions and
+                applications.
               </p>
+
             </div>
 
+
             <div className="level-card">
+
               <span className="num">
                 04
               </span>
@@ -985,11 +1207,16 @@ export default async function CoursePage({
               </small>
 
               <p>
-                Transfer your learning to examinations, code,
-                projects, research or real datasets.
+                Transfer your learning to
+                examinations, code,
+                projects, research or
+                real datasets.
               </p>
+
             </div>
+
           </div>
+
 
           <div
             style={{
@@ -1008,6 +1235,7 @@ export default async function CoursePage({
               />
             </Link>
           </div>
+
         </div>
       </section>
 
@@ -1021,24 +1249,36 @@ export default async function CoursePage({
         id="support"
       >
         <div className="shell">
+
           <div className="cta-band">
+
             <div>
+
               <span className="eyebrow light">
                 Expert support
               </span>
 
               <h2>
-                Stuck somewhere in the course?
+                Stuck somewhere in the
+                course?
               </h2>
+
             </div>
 
+
             <div>
+
               <p>
-                Use 1-to-1 tutoring when you need a deeper
-                explanation, feedback on your understanding,
-                help with a related university topic or support
-                applying the method to your own work.
+                Use 1-to-1 tutoring when
+                you need a deeper
+                explanation, feedback on
+                your understanding, help
+                with a related university
+                topic or support applying
+                the method to your own
+                work.
               </p>
+
 
               <div
                 style={{
@@ -1048,6 +1288,7 @@ export default async function CoursePage({
                   marginTop: "20px",
                 }}
               >
+
                 <Link
                   href="/tutoring"
                   className="button button-white"
@@ -1060,18 +1301,24 @@ export default async function CoursePage({
                   />
                 </Link>
 
+
                 <Link
                   href="/contact"
                   className="button"
                   style={{
-                    borderColor: "#444",
+                    borderColor:
+                      "#444",
                   }}
                 >
                   Ask about support
                 </Link>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
       </section>
 
@@ -1080,18 +1327,24 @@ export default async function CoursePage({
           RELATED COURSES
          ================================================================== */}
 
-      {recommendations.length > 0 && (
+      {recommendations.length >
+        0 && (
         <section className="section">
           <div className="shell">
+
             <SectionHeading
               eyebrow="Continue learning"
               title={`More in ${subject.name}.`}
               description="Build on this course by continuing into related topics within the same discipline."
             />
 
+
             <div className="course-grid">
+
               {recommendations.map(
-                (recommendedCourse) => (
+                (
+                  recommendedCourse
+                ) => (
                   <CourseCard
                     key={
                       recommendedCourse.slug
@@ -1102,7 +1355,9 @@ export default async function CoursePage({
                   />
                 )
               )}
+
             </div>
+
 
             <div
               style={{
@@ -1113,7 +1368,8 @@ export default async function CoursePage({
                 href={`/subjects/${subject.slug}`}
                 className="button button-outline"
               >
-                Explore all {subject.name}
+                Explore all{" "}
+                {subject.name}
 
                 <Icon
                   name="arrow"
@@ -1121,6 +1377,7 @@ export default async function CoursePage({
                 />
               </Link>
             </div>
+
           </div>
         </section>
       )}
@@ -1132,21 +1389,29 @@ export default async function CoursePage({
 
       <section className="section soft">
         <div className="shell">
+
           <div className="testimonial">
+
             <div className="quote-mark">
               “
             </div>
 
+
             <div>
+
               <blockquote>
                 The aim is not to finish{" "}
-                {course.title}. The aim is to reach the
-                point where you can use it.
+                {course.title}. The aim
+                is to reach the point
+                where you can use it.
               </blockquote>
 
+
               <cite>
-                My Academic Tutor learning philosophy
+                My Academic Tutor
+                learning philosophy
               </cite>
+
 
               <div
                 style={{
@@ -1156,6 +1421,7 @@ export default async function CoursePage({
                   marginTop: "26px",
                 }}
               >
+
                 <Link
                   href="/learning"
                   className="button"
@@ -1168,17 +1434,23 @@ export default async function CoursePage({
                   />
                 </Link>
 
+
                 <Link
                   href="/courses"
                   className="button button-outline"
                 >
                   Browse courses
                 </Link>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
       </section>
+
     </>
   );
 }

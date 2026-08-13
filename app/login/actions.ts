@@ -16,6 +16,20 @@ function getValue(
 }
 
 
+function safeNext(
+  value: string
+) {
+  if (
+    value.startsWith("/") &&
+    !value.startsWith("//")
+  ) {
+    return value;
+  }
+
+  return "/dashboard";
+}
+
+
 /* ==========================================================================
    SIGN IN
    ========================================================================== */
@@ -33,10 +47,21 @@ export async function login(
     "password"
   );
 
+  const next = safeNext(
+    getValue(
+      formData,
+      "next"
+    )
+  );
+
 
   if (!email || !password) {
     redirect(
-      "/login?error=Please%20enter%20your%20email%20and%20password."
+      `/login?error=${encodeURIComponent(
+        "Please enter your email and password."
+      )}&next=${encodeURIComponent(
+        next
+      )}`
     );
   }
 
@@ -56,6 +81,8 @@ export async function login(
     redirect(
       `/login?error=${encodeURIComponent(
         error.message
+      )}&next=${encodeURIComponent(
+        next
       )}`
     );
   }
@@ -66,9 +93,8 @@ export async function login(
     "layout"
   );
 
-  redirect(
-    "/dashboard"
-  );
+
+  redirect(next);
 }
 
 
@@ -94,6 +120,13 @@ export async function signup(
     "password"
   );
 
+  const next = safeNext(
+    getValue(
+      formData,
+      "next"
+    )
+  );
+
 
   if (
     !fullName ||
@@ -101,14 +134,22 @@ export async function signup(
     !password
   ) {
     redirect(
-      "/login?mode=signup&error=Please%20complete%20all%20required%20fields."
+      `/login?mode=signup&error=${encodeURIComponent(
+        "Please complete all required fields."
+      )}&next=${encodeURIComponent(
+        next
+      )}`
     );
   }
 
 
   if (password.length < 8) {
     redirect(
-      "/login?mode=signup&error=Password%20must%20be%20at%20least%208%20characters."
+      `/login?mode=signup&error=${encodeURIComponent(
+        "Password must be at least 8 characters."
+      )}&next=${encodeURIComponent(
+        next
+      )}`
     );
   }
 
@@ -134,12 +175,18 @@ export async function signup(
     redirect(
       `/login?mode=signup&error=${encodeURIComponent(
         error.message
+      )}&next=${encodeURIComponent(
+        next
       )}`
     );
   }
 
 
   redirect(
-    "/login?message=Account%20created.%20Please%20check%20your%20email%20to%20confirm%20your%20account."
+    `/login?message=${encodeURIComponent(
+      "Account created. Please check your email to confirm your account."
+    )}&next=${encodeURIComponent(
+      next
+    )}`
   );
 }
