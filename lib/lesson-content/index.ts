@@ -35,6 +35,10 @@ import {
   statisticsFoundationsModule07,
 } from "./statistics-foundations/module-07";
 
+import {
+  calculusFoundationsModule01,
+} from "./calculus-foundations/module-01";
+
 /* ==========================================================================
    EXPORT TYPES
    ========================================================================== */
@@ -62,6 +66,8 @@ export const authoredLessons:
   ...statisticsFoundationsModule06,
 
   ...statisticsFoundationsModule07,
+
+  ...calculusFoundationsModule01,
 ];
 
 

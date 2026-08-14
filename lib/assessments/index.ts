@@ -7,6 +7,10 @@ import {
   statisticsFoundationsAssessments,
 } from "./statistics-foundations";
 
+import {
+  calculusFoundationsAssessments,
+} from "./calculus-foundations";
+
 
 export * from "./types";
 
@@ -15,6 +19,8 @@ export const assessments:
   CourseAssessment[] = [
 
   ...statisticsFoundationsAssessments,
+
+  ...calculusFoundationsAssessments,
 
 ];
 

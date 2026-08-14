@@ -16,6 +16,8 @@ import SamplingSimulator from "@/components/labs/SamplingSimulator";
 import ConfidenceIntervalSimulator from "@/components/labs/ConfidenceIntervalSimulator";
 import HypothesisTestSimulator from "@/components/labs/HypothesisTestSimulator";
 
+import SecantSlopeExplorer from "@/components/labs/SecantSlopeExplorer";
+
 import {
   getCourse,
   getSubject,
@@ -158,7 +160,23 @@ case "hypothesis-test-simulator":
     />
   );
 
+case "secant-slope-explorer":
+
+  return (
+
+    <SecantSlopeExplorer
+
+      title={block.title}
+
+      description={block.description}
+
+    />
+
+  );
+
+
 default:
+
   return null;
   }
 }

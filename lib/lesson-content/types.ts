@@ -69,6 +69,12 @@ export type LessonHypothesisTestSimulator = {
   description: string;
 };
 
+export type LessonSecantSlopeExplorer = {
+  type: "secant-slope-explorer";
+  title: string;
+  description: string;
+};
+
 export type LessonBlock =
   | LessonParagraph
   | LessonHeading
@@ -80,7 +86,8 @@ export type LessonBlock =
   | LessonDistributionModelExplorer
   | LessonSamplingSimulator
   | LessonConfidenceIntervalSimulator
-  | LessonHypothesisTestSimulator;
+  | LessonHypothesisTestSimulator
+  | LessonSecantSlopeExplorer;
 
 
 /* ==========================================================================
