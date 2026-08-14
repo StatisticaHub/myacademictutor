@@ -109,6 +109,9 @@ export const calculusFoundationsCourse:
       key:
         "limits",
 
+      checkpointKey:
+        "module-02-checkpoint",
+
       title:
         "Limits",
 
@@ -153,6 +156,9 @@ export const calculusFoundationsCourse:
     {
       key:
         "derivatives",
+
+      checkpointKey:
+        "module-03-checkpoint",
 
       title:
         "Derivatives",
@@ -199,6 +205,9 @@ export const calculusFoundationsCourse:
       key:
         "rules-of-differentiation",
 
+      checkpointKey:
+        "module-04-checkpoint",
+
       title:
         "Rules of differentiation",
 
@@ -243,6 +252,9 @@ export const calculusFoundationsCourse:
     {
       key:
         "derivative-applications",
+
+      checkpointKey:
+        "module-05-checkpoint",
 
       title:
         "Derivative applications",
@@ -289,6 +301,9 @@ export const calculusFoundationsCourse:
       key:
         "integrals",
 
+      checkpointKey:
+        "module-06-checkpoint",
+
       title:
         "Integrals",
 
@@ -334,6 +349,9 @@ export const calculusFoundationsCourse:
       key:
         "fundamental-theorem-of-calculus",
 
+      checkpointKey:
+        "module-07-checkpoint",
+
       title:
         "The fundamental theorem of calculus",
 
@@ -376,22 +394,24 @@ export const calculusFoundationsCourse:
   ],
 
   /*
-   * Assessment requirements remain disabled while the course is in draft.
-   * We will add checkpoint keys only after their question banks exist,
-   * otherwise the progression engine would route learners to missing
-   * assessments.
+   * Published completion policy:
+   * all lessons, all module checkpoints and the final assessment
+   * are required before the course and certificate are complete.
    */
   completion: {
     requireAllLessons:
       true,
 
     requireAllCheckpoints:
-      false,
+      true,
 
     requireFinalAssessment:
-      false,
+      true,
+
+    finalAssessmentKey:
+      "final-assessment",
 
     certificateEnabled:
-      false,
+      true,
   },
 };
