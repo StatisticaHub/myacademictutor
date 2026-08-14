@@ -19702,3 +19702,776 @@ label {
   }
 
 }
+/* ==========================================================================
+   FINAL TYPOGRAPHY + READABILITY REFINEMENT
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   BASE READING SIZE
+   -------------------------------------------------------------------------- */
+
+body {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+p,
+li {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+
+/* --------------------------------------------------------------------------
+   LONG-FORM / LESSON CONTENT
+   -------------------------------------------------------------------------- */
+
+/*
+ * Keep lesson reading text slightly larger than general site copy.
+ * These selectors intentionally target the authored lesson areas.
+ */
+
+.lesson-content p,
+.lesson-content li,
+.lesson-rich-content p,
+.lesson-rich-content li,
+.lesson-worked-example p,
+.lesson-exercise p,
+.lesson-summary p {
+  font-size: 17px !important;
+  line-height: 1.72;
+}
+
+
+/*
+ * Keep long reading lines under control.
+ */
+
+.lesson-content,
+.lesson-rich-content {
+  max-width: 72ch;
+}
+
+
+/* --------------------------------------------------------------------------
+   QUIZZES + ASSESSMENTS
+   -------------------------------------------------------------------------- */
+
+.lesson-quiz-question,
+.lesson-quiz-question p,
+.assessment-question-heading h2 {
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.assessment-option {
+  font-size: 15px !important;
+  line-height: 1.6;
+}
+
+.assessment-feedback p {
+  font-size: 15px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   GENERAL CARDS / SUPPORTING COPY
+   -------------------------------------------------------------------------- */
+
+.course-card p,
+.dashboard-course p,
+.dashboard-stat p,
+.course-enrol-action small,
+.course-enrol-progress-mini,
+.course-complete-grid p,
+.certificate-eligibility-card p,
+.certificate-verify-card p,
+.certificate-verify-card dd {
+  font-size: 14px !important;
+  line-height: 1.65;
+}
+
+
+/* --------------------------------------------------------------------------
+   BUTTONS + NAVIGATION
+   -------------------------------------------------------------------------- */
+
+.button,
+button,
+nav a {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+
+/* --------------------------------------------------------------------------
+   EYEBROWS + SMALL LABELS
+   -------------------------------------------------------------------------- */
+
+.eyebrow,
+.dashboard-course-label,
+.dashboard-stat > span,
+.dashboard-course-requirements span,
+.assessment-meta span,
+.assessment-question-heading > span,
+.course-complete-grid article > span,
+.certificate-verify-card dt,
+.certificate-verify-hero span {
+  font-size: 12px !important;
+  line-height: 1.4;
+}
+
+
+/* --------------------------------------------------------------------------
+   DARKER MUTED TEXT FOR BETTER CONTRAST
+   -------------------------------------------------------------------------- */
+
+.dashboard-course-meta,
+.dashboard-next-step,
+.dashboard-stat p,
+.dashboard-course p,
+.course-enrol-progress-mini,
+.assessment-heading p,
+.assessment-feedback p,
+.course-complete-grid p,
+.course-complete-note p,
+.certificate-eligibility-card p,
+.certificate-verify-card p,
+.certificate-verify-card dd {
+  color: #686159 !important;
+}
+
+
+/*
+ * Small labels on light backgrounds should not be too pale.
+ */
+
+.dashboard-course-label,
+.dashboard-stat > span,
+.dashboard-course-requirements span,
+.assessment-meta span,
+.assessment-question-heading > span,
+.course-complete-grid article > span,
+.certificate-eligibility-card > div > span,
+.certificate-verify-card dt {
+  color: #6b655e !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   FORMS
+   -------------------------------------------------------------------------- */
+
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+label {
+  font-size: 14px;
+}
+
+
+/* --------------------------------------------------------------------------
+   MOBILE
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+  body {
+    font-size: 16px;
+  }
+
+  p,
+  li {
+    font-size: 16px;
+  }
+
+  .lesson-content p,
+  .lesson-content li,
+  .lesson-rich-content p,
+  .lesson-rich-content li,
+  .lesson-worked-example p,
+  .lesson-exercise p,
+  .lesson-summary p {
+    font-size: 16px !important;
+  }
+
+  .assessment-option {
+    font-size: 15px !important;
+  }
+
+  .button,
+  button,
+  nav a {
+    font-size: 14px;
+  }
+}
+/* ==========================================================================
+   MY ACADEMIC TUTOR — LEARNING-FIRST TYPOGRAPHY SYSTEM
+   Final readability override
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. GLOBAL BASE
+   -------------------------------------------------------------------------- */
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-size: 18px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+
+/* Main reading text */
+
+p,
+li {
+  font-size: 17px;
+  line-height: 1.72;
+}
+
+
+/*
+ * Never allow meaningful secondary text
+ * to become extremely small.
+ */
+
+small {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. GENERAL PAGE COPY
+   -------------------------------------------------------------------------- */
+
+main p,
+main li {
+  font-size: 17px;
+  line-height: 1.72;
+}
+
+
+/*
+ * Introductory copy underneath page headings
+ */
+
+.page-hero p,
+.hero p,
+.section-intro,
+.section-heading p,
+.intro-copy {
+  font-size: 18px !important;
+  line-height: 1.7;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. LESSONS — MOST IMPORTANT READING AREA
+   -------------------------------------------------------------------------- */
+
+/*
+ * Lessons should feel like reading a modern
+ * digital textbook rather than a dashboard.
+ */
+
+.lesson-content p,
+.lesson-content li,
+.lesson-rich-content p,
+.lesson-rich-content li,
+.lesson-body p,
+.lesson-body li,
+.lesson-main p,
+.lesson-main li {
+  font-size: 19px !important;
+  line-height: 1.75 !important;
+}
+
+
+/*
+ * Keep lesson lines comfortably readable.
+ */
+
+.lesson-content,
+.lesson-rich-content,
+.lesson-body {
+  max-width: 72ch;
+}
+
+
+/* Lesson section headings */
+
+.lesson-content h2,
+.lesson-rich-content h2,
+.lesson-body h2 {
+  font-size: clamp(
+    30px,
+    3vw,
+    38px
+  );
+  line-height: 1.15;
+}
+
+.lesson-content h3,
+.lesson-rich-content h3,
+.lesson-body h3 {
+  font-size: clamp(
+    23px,
+    2vw,
+    29px
+  );
+  line-height: 1.2;
+}
+
+
+/* --------------------------------------------------------------------------
+   4. WORKED EXAMPLES
+   -------------------------------------------------------------------------- */
+
+.lesson-worked-example p,
+.lesson-worked-example li,
+.worked-example p,
+.worked-example li {
+  font-size: 18px !important;
+  line-height: 1.72;
+}
+
+
+/* --------------------------------------------------------------------------
+   5. EXERCISES
+   -------------------------------------------------------------------------- */
+
+.lesson-exercise p,
+.lesson-exercise li,
+.exercise-card p,
+.exercise-card li {
+  font-size: 18px !important;
+  line-height: 1.72;
+}
+
+
+/* --------------------------------------------------------------------------
+   6. LESSON SUMMARIES
+   -------------------------------------------------------------------------- */
+
+.lesson-summary p,
+.lesson-summary li {
+  font-size: 18px !important;
+  line-height: 1.72;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. QUIZZES
+   -------------------------------------------------------------------------- */
+
+.lesson-quiz-question,
+.lesson-quiz-question p,
+.quiz-question,
+.quiz-question p {
+  font-size: 18px !important;
+  line-height: 1.6;
+}
+
+.lesson-quiz-option,
+.quiz-option {
+  font-size: 16px !important;
+  line-height: 1.55;
+}
+
+
+/* --------------------------------------------------------------------------
+   8. MODULE / FINAL ASSESSMENTS
+   -------------------------------------------------------------------------- */
+
+.assessment-hero > p {
+  font-size: 17px !important;
+  line-height: 1.7;
+}
+
+.assessment-question-heading h2 {
+  font-size: 21px !important;
+  line-height: 1.45;
+}
+
+.assessment-option {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  padding: 15px !important;
+}
+
+.assessment-feedback p {
+  font-size: 16px !important;
+  line-height: 1.65;
+}
+
+.assessment-feedback strong {
+  font-size: 18px !important;
+}
+
+.assessment-submit-panel p {
+  font-size: 15px !important;
+}
+
+.assessment-result > p {
+  font-size: 16px !important;
+  line-height: 1.7;
+}
+
+.assessment-progress > div:first-child {
+  font-size: 14px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   9. COURSE CARDS
+   -------------------------------------------------------------------------- */
+
+.course-card p {
+  font-size: 16px !important;
+  line-height: 1.65;
+}
+
+.course-card li {
+  font-size: 15px !important;
+  line-height: 1.6;
+}
+
+
+/* --------------------------------------------------------------------------
+   10. COURSE DETAIL PAGE
+   -------------------------------------------------------------------------- */
+
+.course-detail p,
+.course-overview p,
+.course-description,
+.course-intro p {
+  font-size: 17px !important;
+  line-height: 1.72;
+}
+
+.course-enrol-action small {
+  font-size: 14px !important;
+}
+
+.course-enrol-progress-mini {
+  font-size: 14px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   11. DASHBOARD
+   -------------------------------------------------------------------------- */
+
+.dashboard-stat p {
+  font-size: 15px !important;
+  line-height: 1.6;
+}
+
+.dashboard-course p {
+  font-size: 15px !important;
+  line-height: 1.65;
+}
+
+.dashboard-course-meta {
+  font-size: 14px !important;
+}
+
+.dashboard-next-step {
+  font-size: 15px !important;
+}
+
+.dashboard-next-step strong {
+  font-size: 15px;
+}
+
+.dashboard-course-requirements strong {
+  font-size: 21px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   12. NAVIGATION
+   -------------------------------------------------------------------------- */
+
+header nav a,
+nav a,
+.header a {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+
+/* --------------------------------------------------------------------------
+   13. BUTTONS
+   -------------------------------------------------------------------------- */
+
+.button,
+button {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+
+/*
+ * Assessment answer buttons need slightly
+ * more comfortable text.
+ */
+
+.assessment-option {
+  font-size: 16px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   14. LABELS / EYEBROWS / METADATA
+   -------------------------------------------------------------------------- */
+
+.eyebrow {
+  font-size: 12px !important;
+  line-height: 1.4;
+}
+
+
+/*
+ * These remain visually secondary,
+ * but should still be easy to read.
+ */
+
+.dashboard-course-label,
+.dashboard-stat > span,
+.dashboard-course-requirements span,
+.assessment-meta span,
+.assessment-question-heading > span,
+.course-complete-grid article > span,
+.certificate-verify-card dt,
+.certificate-verify-hero span {
+  font-size: 12px !important;
+  line-height: 1.45;
+}
+
+
+/* --------------------------------------------------------------------------
+   15. FORMS
+   -------------------------------------------------------------------------- */
+
+label {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+input,
+textarea,
+select {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+
+/* --------------------------------------------------------------------------
+   16. ABOUT / CONTACT / RESOURCES / GENERAL CONTENT PAGES
+   -------------------------------------------------------------------------- */
+
+.about-page p,
+.contact-page p,
+.resources-page p,
+.learning-page p,
+.tutoring-page p,
+.pathways-page p,
+.subject-page p {
+  font-size: 17px !important;
+  line-height: 1.72;
+}
+
+
+/* --------------------------------------------------------------------------
+   17. COURSE COMPLETION PAGE
+   -------------------------------------------------------------------------- */
+
+.course-complete-hero p {
+  font-size: 18px !important;
+  line-height: 1.7;
+}
+
+.course-complete-grid p {
+  font-size: 15px !important;
+  line-height: 1.65;
+}
+
+.certificate-eligibility-card p {
+  font-size: 16px !important;
+  line-height: 1.7;
+}
+
+.course-complete-note p {
+  font-size: 16px !important;
+  line-height: 1.7;
+}
+
+
+/* --------------------------------------------------------------------------
+   18. CERTIFICATE VERIFICATION
+   -------------------------------------------------------------------------- */
+
+.certificate-verify-hero p {
+  font-size: 16px !important;
+}
+
+.certificate-verify-card p {
+  font-size: 16px !important;
+  line-height: 1.7;
+}
+
+.certificate-verify-card dd {
+  font-size: 15px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   19. CONTRAST — AVOID PALE GREY SMALL TEXT
+   -------------------------------------------------------------------------- */
+
+.dashboard-course-meta,
+.dashboard-next-step,
+.dashboard-stat p,
+.dashboard-course p,
+.course-enrol-progress-mini,
+.assessment-feedback p,
+.assessment-submit-panel p,
+.course-complete-grid p,
+.course-complete-note p,
+.certificate-eligibility-card p,
+.certificate-verify-card p,
+.certificate-verify-card dd {
+  color: #5f5952 !important;
+}
+
+
+/*
+ * Metadata still looks secondary,
+ * without becoming difficult to read.
+ */
+
+.dashboard-course-label,
+.dashboard-stat > span,
+.dashboard-course-requirements span,
+.assessment-meta span,
+.assessment-question-heading > span,
+.course-complete-grid article > span,
+.certificate-eligibility-card > div > span,
+.certificate-verify-card dt {
+  color: #625c55 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   20. TABLES
+   -------------------------------------------------------------------------- */
+
+table {
+  font-size: 16px;
+}
+
+th {
+  font-size: 14px;
+}
+
+td {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+
+/* --------------------------------------------------------------------------
+   21. MOBILE — DO NOT MAKE READING TEXT TINY
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+  body {
+    font-size: 17px;
+  }
+
+
+  p,
+  li,
+  main p,
+  main li {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+
+  /*
+   * Lessons stay large even on phones.
+   */
+
+  .lesson-content p,
+  .lesson-content li,
+  .lesson-rich-content p,
+  .lesson-rich-content li,
+  .lesson-body p,
+  .lesson-body li,
+  .lesson-main p,
+  .lesson-main li {
+    font-size: 17px !important;
+    line-height: 1.72 !important;
+  }
+
+
+  .lesson-worked-example p,
+  .lesson-worked-example li,
+  .worked-example p,
+  .worked-example li,
+  .lesson-exercise p,
+  .lesson-exercise li,
+  .lesson-summary p,
+  .lesson-summary li {
+    font-size: 16px !important;
+  }
+
+
+  .assessment-question-heading h2 {
+    font-size: 19px !important;
+  }
+
+
+  .assessment-option {
+    font-size: 16px !important;
+  }
+
+
+  .course-card p {
+    font-size: 15px !important;
+  }
+
+
+  .dashboard-stat p,
+  .dashboard-course p {
+    font-size: 15px !important;
+  }
+
+
+  .button,
+  button,
+  nav a {
+    font-size: 15px;
+  }
+
+
+  .eyebrow,
+  .dashboard-course-label,
+  .dashboard-stat > span,
+  .dashboard-course-requirements span,
+  .assessment-meta span {
+    font-size: 12px !important;
+  }
+}
