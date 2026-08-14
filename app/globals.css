@@ -19501,3 +19501,204 @@ textarea:focus-visible {
     align-items: stretch;
   }
 }
+
+/* ==========================================================================
+   GLOBAL TYPOGRAPHY READABILITY PASS
+   ========================================================================== */
+
+/*
+ * The site uses large editorial headings,
+ * but supporting text should remain comfortably readable.
+ */
+
+body {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+
+/* --------------------------------------------------------------------------
+   GENERAL BODY COPY
+   -------------------------------------------------------------------------- */
+
+p,
+li {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+
+/* --------------------------------------------------------------------------
+   BUTTONS + NAVIGATION
+   -------------------------------------------------------------------------- */
+
+.button,
+button,
+nav a {
+  font-size: 14px;
+}
+
+
+/* --------------------------------------------------------------------------
+   EYEBROWS / SMALL LABELS
+   -------------------------------------------------------------------------- */
+
+.eyebrow {
+  font-size: 11px !important;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+}
+
+
+/* --------------------------------------------------------------------------
+   COURSE / CARD SUPPORTING TEXT
+   -------------------------------------------------------------------------- */
+
+.course-card p,
+.course-card li,
+.dashboard-course p,
+.dashboard-stat p,
+.dashboard-course-meta,
+.dashboard-next-step,
+.course-enrol-action small,
+.course-enrol-progress-mini,
+.assessment-hero > p,
+.assessment-question-card,
+.assessment-feedback p,
+.assessment-submit-panel p,
+.assessment-result > p,
+.course-complete-grid p,
+.certificate-eligibility-card p,
+.certificate-verify-card p,
+.certificate-verify-card dd {
+  font-size: 14px !important;
+  line-height: 1.65;
+}
+
+
+/* --------------------------------------------------------------------------
+   SMALL METADATA
+   -------------------------------------------------------------------------- */
+
+.dashboard-course-label,
+.dashboard-stat > span,
+.dashboard-course-requirements span,
+.assessment-meta span,
+.assessment-question-heading > span,
+.assessment-option-letter,
+.course-complete-grid article > span,
+.certificate-eligibility-card > div > span,
+.certificate-verify-card dt,
+.certificate-verify-hero > div > span {
+  font-size: 11px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   ASSESSMENTS
+   -------------------------------------------------------------------------- */
+
+.assessment-option {
+  font-size: 14px !important;
+  line-height: 1.55;
+}
+
+.assessment-progress > div:first-child {
+  font-size: 13px;
+}
+
+.assessment-submit-panel span {
+  font-size: 21px;
+}
+
+.assessment-feedback strong {
+  font-size: 17px;
+}
+
+
+/* --------------------------------------------------------------------------
+   DASHBOARD
+   -------------------------------------------------------------------------- */
+
+.dashboard-course-meta {
+  font-size: 13px !important;
+}
+
+.dashboard-course-status {
+  font-size: 11px;
+}
+
+.dashboard-course-requirements strong {
+  font-size: 20px;
+}
+
+
+/* --------------------------------------------------------------------------
+   COURSE COMPLETION / CERTIFICATES
+   -------------------------------------------------------------------------- */
+
+.course-complete-hero p {
+  font-size: 16px;
+}
+
+.course-complete-note p {
+  font-size: 14px;
+}
+
+.certificate-verify-hero p {
+  font-size: 14px;
+}
+
+.certificate-verify-status {
+  font-size: 25px;
+}
+
+
+/* --------------------------------------------------------------------------
+   FORMS
+   -------------------------------------------------------------------------- */
+
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+label {
+  font-size: 14px;
+}
+
+
+/* --------------------------------------------------------------------------
+   MOBILE
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+  body {
+    font-size: 15px;
+  }
+
+  p,
+  li {
+    font-size: 15px;
+  }
+
+  .button,
+  button,
+  nav a {
+    font-size: 13px;
+  }
+
+  .course-card p,
+  .dashboard-course p,
+  .dashboard-stat p,
+  .assessment-question-card,
+  .assessment-option,
+  .assessment-feedback p,
+  .course-complete-grid p,
+  .certificate-verify-card dd {
+    font-size: 14px !important;
+  }
+
+}
