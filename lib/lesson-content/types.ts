@@ -75,6 +75,42 @@ export type LessonSecantSlopeExplorer = {
   description: string;
 };
 
+export type LessonLimitExplorer = {
+  type: "limit-explorer";
+  title: string;
+  description: string;
+};
+
+export type LessonTangentLineExplorer = {
+  type: "tangent-line-explorer";
+  title: string;
+  description: string;
+};
+
+export type LessonChainRuleBuilder = {
+  type: "chain-rule-builder";
+  title: string;
+  description: string;
+};
+
+export type LessonCurveBehaviourExplorer = {
+  type: "curve-behaviour-explorer";
+  title: string;
+  description: string;
+};
+
+export type LessonRiemannSumExplorer = {
+  type: "riemann-sum-explorer";
+  title: string;
+  description: string;
+};
+
+export type LessonFTCConnectionExplorer = {
+  type: "ftc-connection-explorer";
+  title: string;
+  description: string;
+};
+
 export type LessonBlock =
   | LessonParagraph
   | LessonHeading
@@ -87,7 +123,13 @@ export type LessonBlock =
   | LessonSamplingSimulator
   | LessonConfidenceIntervalSimulator
   | LessonHypothesisTestSimulator
-  | LessonSecantSlopeExplorer;
+  | LessonSecantSlopeExplorer
+  | LessonLimitExplorer
+  | LessonTangentLineExplorer
+  | LessonChainRuleBuilder
+  | LessonCurveBehaviourExplorer
+  | LessonRiemannSumExplorer
+  | LessonFTCConnectionExplorer;
 
 
 /* ==========================================================================

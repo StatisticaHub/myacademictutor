@@ -53,7 +53,7 @@ export const calculusFoundationsCourse:
     "high-school",
 
   status:
-    "draft",
+    "published",
 
   modules: [
 

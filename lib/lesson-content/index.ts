@@ -39,6 +39,30 @@ import {
   calculusFoundationsModule01,
 } from "./calculus-foundations/module-01";
 
+import {
+  calculusFoundationsModule02,
+} from "./calculus-foundations/module-02";
+
+import {
+  calculusFoundationsModule03,
+} from "./calculus-foundations/module-03";
+
+import {
+  calculusFoundationsModule04,
+} from "./calculus-foundations/module-04";
+
+import {
+  calculusFoundationsModule05,
+} from "./calculus-foundations/module-05";
+
+import {
+  calculusFoundationsModule06,
+} from "./calculus-foundations/module-06";
+
+import {
+  calculusFoundationsModule07,
+} from "./calculus-foundations/module-07";
+
 /* ==========================================================================
    EXPORT TYPES
    ========================================================================== */
@@ -68,6 +92,18 @@ export const authoredLessons:
   ...statisticsFoundationsModule07,
 
   ...calculusFoundationsModule01,
+
+  ...calculusFoundationsModule02,
+
+  ...calculusFoundationsModule03,
+
+  ...calculusFoundationsModule04,
+
+  ...calculusFoundationsModule05,
+
+  ...calculusFoundationsModule06,
+
+  ...calculusFoundationsModule07,
 ];
 
 

@@ -14,3 +14,14 @@ export {
   hasRegisteredCourseDefinition,
   validateCourseDefinition,
 } from "@/lib/course-engine/registry";
+
+
+export {
+  filterVisibleCourses,
+  getCoursePublicationState,
+  isCourseEnrollable,
+  isCourseIndexable,
+  isCourseLearningAccessible,
+  isCoursePreviewMode,
+  isCourseVisibleInCatalogue,
+} from "@/lib/course-engine/publication";

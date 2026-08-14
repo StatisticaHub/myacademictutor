@@ -8,6 +8,10 @@ import {
 } from "./statistics-foundations";
 
 import {
+  isCourseLearningAccessible,
+} from "@/lib/course-engine/publication";
+
+import {
   calculusFoundationsAssessments,
 } from "./calculus-foundations";
 
@@ -29,7 +33,16 @@ export function getAssessment(
   courseSlug: string,
   assessmentKey: string
 ) {
-  return assessments.find(
+  /* ASSESSMENT PUBLICATION GUARD */
+  if (
+    !isCourseLearningAccessible(
+      courseSlug
+    )
+  ) {
+    return undefined;
+  }
+
+return assessments.find(
     (assessment) =>
       assessment.courseSlug ===
         courseSlug &&
@@ -42,7 +55,15 @@ export function getAssessment(
 export function getCourseAssessments(
   courseSlug: string
 ) {
-  return assessments.filter(
+  if (
+    !isCourseLearningAccessible(
+      courseSlug
+    )
+  ) {
+    return [];
+  }
+
+return assessments.filter(
     (assessment) =>
       assessment.courseSlug ===
       courseSlug

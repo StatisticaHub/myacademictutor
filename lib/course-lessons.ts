@@ -6,6 +6,10 @@ import {
   getCourseDefinition,
 } from "@/lib/course-engine";
 
+import {
+  isCourseLearningAccessible,
+} from "@/lib/course-engine/publication";
+
 
 type CourseReference =
   | string
@@ -81,6 +85,21 @@ function buildCourseStructure(
     resolveCourseSlug(
       course
     );
+
+
+  if (
+    !isCourseLearningAccessible(
+      courseSlug
+    )
+  ) {
+    return {
+      modules:
+        [] as CourseModule[],
+
+      lessons:
+        [] as CourseLesson[],
+    };
+  }
 
 
   const definition =

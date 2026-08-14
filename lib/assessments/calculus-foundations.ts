@@ -5,216 +5,1088 @@ import type {
 
 /* ==========================================================================
    CALCULUS FOUNDATIONS
-   ASSESSMENTS
+   COMPLETE ASSESSMENT SET
    ========================================================================== */
 
 export const calculusFoundationsAssessments:
   CourseAssessment[] = [
 
-  /* ========================================================================
-     MODULE 01 — FUNCTIONS AND CHANGE
-     ======================================================================== */
-
   {
-    key:
-      "module-01-checkpoint",
-
-    courseSlug:
-      "calculus-foundations",
-
-    type:
-      "module-checkpoint",
-
-    moduleNumber:
-      1,
-
-    title:
-      "Module 1 Checkpoint",
-
-    description:
-      "Check your understanding of functions, graph interpretation, average rate of change, secant slopes and the idea of instantaneous change.",
-
-    passingPercentage:
-      70,
-
+    key: "module-01-checkpoint",
+    courseSlug: "calculus-foundations",
+    type: "module-checkpoint",
+    moduleNumber: 1,
+    title: "Module 1 Checkpoint",
+    description: "Check functions, graph interpretation, average rate of change, secant slopes and instantaneous-change intuition.",
+    passingPercentage: 70,
     questions: [
-
       {
-        id:
-          "calc-m1-q1",
-
-        question:
-          "Which statement best describes a function?",
-
+        id: "calc-m1-q1",
+        question: "Which statement best describes a function?",
         options: [
           "A rule that assigns each allowed input exactly one output",
           "Any equation containing both x and y",
           "A graph that must be a straight line",
           "A rule that gives every input at least two outputs",
         ],
-
-        correctIndex:
-          0,
-
-        explanation:
-          "A function is defined by its input-output relationship: every allowed input is assigned exactly one output.",
+        correctIndex: 0,
+        explanation: "A function assigns each allowed input exactly one output.",
       },
-
-
       {
-        id:
-          "calc-m1-q2",
-
-        question:
-          "If f(x) = 2x² - 3, what is f(2)?",
-
+        id: "calc-m1-q2",
+        question: "If f(x) = 2x² - 3, what is f(2)?",
         options: [
           "1",
           "5",
           "8",
           "13",
         ],
-
-        correctIndex:
-          1,
-
-        explanation:
-          "Substitute x = 2: f(2) = 2(2²) - 3 = 8 - 3 = 5.",
+        correctIndex: 1,
+        explanation: "f(2)=2(4)-3=5.",
       },
-
-
       {
-        id:
-          "calc-m1-q3",
-
-        question:
-          "A graph rises from y = -8 to y = -2 as x increases. How should the function be described over that interval?",
-
+        id: "calc-m1-q3",
+        question: "A graph rises from y = -8 to y = -2 as x increases. The function is...",
         options: [
           "Increasing",
           "Decreasing",
           "Constant",
-          "Undefined because the y-values are negative",
+          "Undefined",
         ],
-
-        correctIndex:
-          0,
-
-        explanation:
-          "Increasing means the output becomes larger as x increases. The values can remain negative and still be increasing.",
+        correctIndex: 0,
+        explanation: "The output becomes larger as x increases.",
       },
-
-
       {
-        id:
-          "calc-m1-q4",
-
-        question:
-          "A taxi fare is modelled by C(d) = 4 + 1.5d, where d is distance in kilometres. What does the y-intercept represent?",
-
+        id: "calc-m1-q4",
+        question: "For C(d)=4+1.5d, what does the y-intercept represent?",
         options: [
-          "The taxi travels 4 kilometres before charging",
-          "The fare decreases by £4 per kilometre",
-          "The fixed £4 charge when the journey distance is zero",
-          "The maximum possible fare",
+          "4 kilometres",
+          "A £4 fixed starting charge",
+          "The maximum fare",
+          "A £1.50 fixed charge",
         ],
-
-        correctIndex:
-          2,
-
-        explanation:
-          "The y-intercept is C(0) = 4, so it represents the fixed starting charge before any distance-based cost is added.",
+        correctIndex: 1,
+        explanation: "C(0)=4 is the fixed starting charge.",
       },
-
-
       {
-        id:
-          "calc-m1-q5",
-
-        question:
-          "For f(x) = x², what is the average rate of change from x = 1 to x = 3?",
-
+        id: "calc-m1-q5",
+        question: "For f(x)=x², what is the average rate of change from x=1 to x=3?",
         options: [
           "2",
           "3",
           "4",
           "8",
         ],
-
-        correctIndex:
-          2,
-
-        explanation:
-          "The average rate is [f(3) - f(1)] / (3 - 1) = (9 - 1) / 2 = 4.",
+        correctIndex: 2,
+        explanation: "(9-1)/(3-1)=4.",
       },
-
-
       {
-        id:
-          "calc-m1-q6",
-
-        question:
-          "A temperature falls from 20°C to 8°C over 4 hours. What is its average rate of change?",
-
+        id: "calc-m1-q6",
+        question: "Temperature falls from 20°C to 8°C over 4 hours. What is the average rate of change?",
         options: [
-          "3°C per hour",
-          "-3°C per hour",
-          "7°C per hour",
-          "-12°C per hour",
+          "3°C/hour",
+          "-3°C/hour",
+          "7°C/hour",
+          "-12°C/hour",
         ],
-
-        correctIndex:
-          1,
-
-        explanation:
-          "The temperature change is 8 - 20 = -12°C. Dividing by 4 hours gives -3°C per hour.",
+        correctIndex: 1,
+        explanation: "(8-20)/4=-3°C/hour.",
       },
-
-
       {
-        id:
-          "calc-m1-q7",
-
-        question:
-          "What does the slope of a secant line through two points on the graph of a function represent?",
-
+        id: "calc-m1-q7",
+        question: "The slope of a secant line through two graph points represents...",
         options: [
-          "The function's y-intercept",
-          "The average rate of change between the two points",
-          "The instantaneous rate of change at every point",
-          "The maximum value of the function",
+          "The y-intercept",
+          "Average rate of change",
+          "Instantaneous rate at every point",
+          "The maximum output",
         ],
-
-        correctIndex:
-          1,
-
-        explanation:
-          "A secant line connects two points on the graph. Its slope is the change in output divided by the change in input across that interval.",
+        correctIndex: 1,
+        explanation: "A secant slope is output change divided by input change across an interval.",
       },
-
-
       {
-        id:
-          "calc-m1-q8",
-
-        question:
-          "Why do we move a second point closer and closer to a fixed point when developing the idea of instantaneous rate of change?",
-
+        id: "calc-m1-q8",
+        question: "Why move a second point closer and closer to a fixed graph point?",
         options: [
-          "To force the function value to become zero",
-          "To make every curved graph become a straight line",
-          "To study the value approached by secant slopes as the interval shrinks",
-          "To avoid using function notation",
+          "To force the function value to zero",
+          "To study the value approached by secant slopes",
+          "To make every graph linear",
+          "To avoid function notation",
         ],
-
-        correctIndex:
-          2,
-
-        explanation:
-          "Using the same point twice would give a zero-width interval and an undefined 0/0 quotient. Calculus instead studies what the secant slopes approach as the second point moves toward the first.",
+        correctIndex: 1,
+        explanation: "Shrinking secant intervals motivate the instantaneous rate of change.",
       },
-
     ],
   },
 
+  {
+    key: "module-02-checkpoint",
+    courseSlug: "calculus-foundations",
+    type: "module-checkpoint",
+    moduleNumber: 2,
+    title: "Module 2 Checkpoint",
+    description: "Check limits, one-sided behaviour, algebraic evaluation and continuity.",
+    passingPercentage: 70,
+    questions: [
+      {
+        id: "calc-m2-q1",
+        question: "Which statement best describes a limit?",
+        options: [
+          "The value f(a) only",
+          "The value f(x) approaches as x approaches a",
+          "The maximum of f",
+          "The derivative at a",
+        ],
+        correctIndex: 1,
+        explanation: "A limit concerns nearby approach behaviour.",
+      },
+      {
+        id: "calc-m2-q2",
+        question: "If f approaches 4 from both sides at x=2 but f(2) is undefined, what is the limit?",
+        options: [
+          "Undefined",
+          "2",
+          "4",
+          "0",
+        ],
+        correctIndex: 2,
+        explanation: "The limit can exist even when the point value is missing.",
+      },
+      {
+        id: "calc-m2-q3",
+        question: "If the left-hand limit is 3 and the right-hand limit is 7, the two-sided limit...",
+        options: [
+          "Equals 5",
+          "Equals 3",
+          "Equals 7",
+          "Does not exist",
+        ],
+        correctIndex: 3,
+        explanation: "One-sided limits must agree.",
+      },
+      {
+        id: "calc-m2-q4",
+        question: "What should usually be tried first for an elementary algebraic limit?",
+        options: [
+          "Direct substitution",
+          "Differentiate immediately",
+          "Set the answer to zero",
+          "Average endpoints",
+        ],
+        correctIndex: 0,
+        explanation: "Direct substitution is the natural first strategy.",
+      },
+      {
+        id: "calc-m2-q5",
+        question: "Direct substitution gives 0/0. What does that mean?",
+        options: [
+          "The limit is zero",
+          "The limit never exists",
+          "The form is indeterminate and needs more analysis",
+          "The function is continuous",
+        ],
+        correctIndex: 2,
+        explanation: "0/0 is an indeterminate signal.",
+      },
+      {
+        id: "calc-m2-q6",
+        question: "Evaluate lim x→3 (x²-9)/(x-3).",
+        options: [
+          "0",
+          "3",
+          "6",
+          "Does not exist",
+        ],
+        correctIndex: 2,
+        explanation: "Factor to (x-3)(x+3), then nearby values follow x+3.",
+      },
+      {
+        id: "calc-m2-q7",
+        question: "Which conditions define continuity at x=a?",
+        options: [
+          "f(a) defined, two-sided limit exists, and the limit equals f(a)",
+          "f′(a)=0 and f(a)>0",
+          "Only the left limit exists",
+          "The function is increasing",
+        ],
+        correctIndex: 0,
+        explanation: "These are the three continuity conditions.",
+      },
+      {
+        id: "calc-m2-q8",
+        question: "A hole in an otherwise smooth graph is typically which discontinuity?",
+        options: [
+          "Jump",
+          "Infinite",
+          "Removable",
+          "Periodic",
+        ],
+        correctIndex: 2,
+        explanation: "A removable discontinuity has a nearby limit but a missing or misplaced point value.",
+      },
+    ],
+  },
+
+  {
+    key: "module-03-checkpoint",
+    courseSlug: "calculus-foundations",
+    type: "module-checkpoint",
+    moduleNumber: 3,
+    title: "Module 3 Checkpoint",
+    description: "Check derivative meaning, tangent slopes, notation and derivative estimation.",
+    passingPercentage: 70,
+    questions: [
+      {
+        id: "calc-m3-q1",
+        question: "A derivative at a point measures...",
+        options: [
+          "Instantaneous rate of change",
+          "Total area only",
+          "Average of all outputs",
+          "Domain size",
+        ],
+        correctIndex: 0,
+        explanation: "The derivative is an instantaneous local rate.",
+      },
+      {
+        id: "calc-m3-q2",
+        question: "Geometrically, f′(a) is the slope of the...",
+        options: [
+          "Secant through any two points",
+          "Tangent at x=a",
+          "x-axis",
+          "Vertical asymptote",
+        ],
+        correctIndex: 1,
+        explanation: "The derivative gives tangent slope.",
+      },
+      {
+        id: "calc-m3-q3",
+        question: "If f′(a)<0, f is locally...",
+        options: [
+          "Increasing",
+          "Decreasing",
+          "Constant everywhere",
+          "Undefined",
+        ],
+        correctIndex: 1,
+        explanation: "Negative derivative means local decrease.",
+      },
+      {
+        id: "calc-m3-q4",
+        question: "If f′(a)=0, which conclusion is always valid?",
+        options: [
+          "a is a maximum",
+          "a is a minimum",
+          "The tangent is horizontal",
+          "f(a)=0",
+        ],
+        correctIndex: 2,
+        explanation: "Derivative zero means horizontal tangent; classification needs more information.",
+      },
+      {
+        id: "calc-m3-q5",
+        question: "What are derivative units if volume is litres and time is minutes?",
+        options: [
+          "litres",
+          "minutes/litre",
+          "litres/minute",
+          "litres²",
+        ],
+        correctIndex: 2,
+        explanation: "Derivative units are output per input.",
+      },
+      {
+        id: "calc-m3-q6",
+        question: "Which notation explicitly means derivative of y with respect to x?",
+        options: [
+          "y/x",
+          "dy/dx",
+          "xy",
+          "x/y",
+        ],
+        correctIndex: 1,
+        explanation: "Leibniz notation makes the variables explicit.",
+      },
+      {
+        id: "calc-m3-q7",
+        question: "Using f(1.9)=3.61 and f(2.1)=4.41, estimate f′(2).",
+        options: [
+          "2",
+          "4",
+          "8",
+          "0.4",
+        ],
+        correctIndex: 1,
+        explanation: "(4.41-3.61)/(2.1-1.9)=4.",
+      },
+      {
+        id: "calc-m3-q8",
+        question: "Why can extremely tiny intervals be unstable with noisy data?",
+        options: [
+          "Noise can dominate relative to the small input difference",
+          "Derivatives stop existing",
+          "Units disappear",
+          "Graphs become linear",
+        ],
+        correctIndex: 0,
+        explanation: "Measurement errors can dominate a small denominator.",
+      },
+    ],
+  },
+
+  {
+    key: "module-04-checkpoint",
+    courseSlug: "calculus-foundations",
+    type: "module-checkpoint",
+    moduleNumber: 4,
+    title: "Module 4 Checkpoint",
+    description: "Check power, product, quotient, chain, exponential and trigonometric differentiation rules.",
+    passingPercentage: 70,
+    questions: [
+      {
+        id: "calc-m4-q1",
+        question: "Differentiate x⁵.",
+        options: [
+          "5x⁴",
+          "x⁴",
+          "4x⁵",
+          "5x⁵",
+        ],
+        correctIndex: 0,
+        explanation: "Power rule gives 5x⁴.",
+      },
+      {
+        id: "calc-m4-q2",
+        question: "Differentiate 3x⁴-2x+7.",
+        options: [
+          "12x³-2",
+          "12x³+7",
+          "3x³-2",
+          "12x⁴-2",
+        ],
+        correctIndex: 0,
+        explanation: "Differentiate term by term and constants vanish.",
+      },
+      {
+        id: "calc-m4-q3",
+        question: "The product rule for uv is...",
+        options: [
+          "u′v′",
+          "u′v+uv′",
+          "u/v",
+          "u′+v′",
+        ],
+        correctIndex: 1,
+        explanation: "Both changing factors contribute.",
+      },
+      {
+        id: "calc-m4-q4",
+        question: "Differentiate (2x+1)⁴.",
+        options: [
+          "4(2x+1)³",
+          "8(2x+1)³",
+          "8(2x+1)⁴",
+          "2(2x+1)³",
+        ],
+        correctIndex: 1,
+        explanation: "Chain rule multiplies by inner derivative 2.",
+      },
+      {
+        id: "calc-m4-q5",
+        question: "Differentiate sin x.",
+        options: [
+          "-sin x",
+          "cos x",
+          "-cos x",
+          "sin x",
+        ],
+        correctIndex: 1,
+        explanation: "d/dx(sin x)=cos x.",
+      },
+      {
+        id: "calc-m4-q6",
+        question: "Differentiate cos x.",
+        options: [
+          "sin x",
+          "-sin x",
+          "cos x",
+          "-cos x",
+        ],
+        correctIndex: 1,
+        explanation: "d/dx(cos x)=-sin x.",
+      },
+      {
+        id: "calc-m4-q7",
+        question: "Differentiate e^(3x).",
+        options: [
+          "e^(3x)",
+          "3e^(3x)",
+          "3xe^(3x)",
+          "e^x",
+        ],
+        correctIndex: 1,
+        explanation: "Chain rule contributes the inner derivative 3.",
+      },
+      {
+        id: "calc-m4-q8",
+        question: "Which situation most clearly requires the chain rule?",
+        options: [
+          "x⁴",
+          "7",
+          "(x²+1)⁵",
+          "x+2",
+        ],
+        correctIndex: 2,
+        explanation: "This is a nested composite function.",
+      },
+      {
+        id: "calc-m4-q9",
+        question: "The denominator in the quotient-rule derivative of u/v is...",
+        options: [
+          "v",
+          "v²",
+          "u²",
+          "v′",
+        ],
+        correctIndex: 1,
+        explanation: "The quotient-rule denominator is v².",
+      },
+      {
+        id: "calc-m4-q10",
+        question: "Differentiate x²(x+1).",
+        options: [
+          "2x(x+1)+x²",
+          "2x²",
+          "x²+1",
+          "2x(x+1) only",
+        ],
+        correctIndex: 0,
+        explanation: "Product rule gives u′v+uv′.",
+      },
+    ],
+  },
+
+  {
+    key: "module-05-checkpoint",
+    courseSlug: "calculus-foundations",
+    type: "module-checkpoint",
+    moduleNumber: 5,
+    title: "Module 5 Checkpoint",
+    description: "Check derivative applications including monotonicity, extrema, optimisation and motion.",
+    passingPercentage: 70,
+    questions: [
+      {
+        id: "calc-m5-q1",
+        question: "If f′>0 on an interval, f is...",
+        options: [
+          "Increasing",
+          "Decreasing",
+          "Constant",
+          "Undefined",
+        ],
+        correctIndex: 0,
+        explanation: "Positive derivative means increasing.",
+      },
+      {
+        id: "calc-m5-q2",
+        question: "Stationary points satisfy...",
+        options: [
+          "f=0",
+          "f′=0",
+          "f′=1",
+          "f″=0 always",
+        ],
+        correctIndex: 1,
+        explanation: "A stationary point has horizontal tangent.",
+      },
+      {
+        id: "calc-m5-q3",
+        question: "If f′ changes from positive to negative, what occurs?",
+        options: [
+          "Local minimum",
+          "Local maximum",
+          "Jump discontinuity",
+          "No turning",
+        ],
+        correctIndex: 1,
+        explanation: "Increasing then decreasing gives a local maximum.",
+      },
+      {
+        id: "calc-m5-q4",
+        question: "If f″>0, the curve is...",
+        options: [
+          "Concave up",
+          "Concave down",
+          "Always decreasing",
+          "Always zero",
+        ],
+        correctIndex: 0,
+        explanation: "Positive second derivative means increasing slopes.",
+      },
+      {
+        id: "calc-m5-q5",
+        question: "For f(x)=x²-6x, where is the stationary x-value?",
+        options: [
+          "-3",
+          "0",
+          "3",
+          "6",
+        ],
+        correctIndex: 2,
+        explanation: "f′=2x-6=0 gives x=3.",
+      },
+      {
+        id: "calc-m5-q6",
+        question: "In optimisation, after solving f′=0 you should...",
+        options: [
+          "Always stop",
+          "Check classification and feasible domain",
+          "Discard units",
+          "Assume maximum",
+        ],
+        correctIndex: 1,
+        explanation: "Candidates must be classified and checked against constraints.",
+      },
+      {
+        id: "calc-m5-q7",
+        question: "If s(t) is position, velocity is...",
+        options: [
+          "s′(t)",
+          "s″(t)",
+          "|s(t)|",
+          "∫s",
+        ],
+        correctIndex: 0,
+        explanation: "Velocity is the derivative of position.",
+      },
+      {
+        id: "calc-m5-q8",
+        question: "An object has v<0 and a<0. Its speed is generally...",
+        options: [
+          "Increasing",
+          "Decreasing",
+          "Zero",
+          "Undefined",
+        ],
+        correctIndex: 0,
+        explanation: "Velocity and acceleration have the same sign, so speed increases.",
+      },
+    ],
+  },
+
+  {
+    key: "module-06-checkpoint",
+    courseSlug: "calculus-foundations",
+    type: "module-checkpoint",
+    moduleNumber: 6,
+    title: "Module 6 Checkpoint",
+    description: "Check accumulation, antiderivatives, definite integrals and signed area.",
+    passingPercentage: 70,
+    questions: [
+      {
+        id: "calc-m6-q1",
+        question: "A definite integral is fundamentally a...",
+        options: [
+          "Limit of sums of small contributions",
+          "Tangent slope only",
+          "Single function value",
+          "Derivative sign chart",
+        ],
+        correctIndex: 0,
+        explanation: "Integration formalises accumulation through limiting sums.",
+      },
+      {
+        id: "calc-m6-q2",
+        question: "Area below the x-axis contributes what sign to a definite integral?",
+        options: [
+          "Positive",
+          "Negative",
+          "Zero always",
+          "Undefined",
+        ],
+        correctIndex: 1,
+        explanation: "Definite integrals use signed area.",
+      },
+      {
+        id: "calc-m6-q3",
+        question: "Find ∫3x² dx.",
+        options: [
+          "x³+C",
+          "3x³+C",
+          "x²+C",
+          "6x+C",
+        ],
+        correctIndex: 0,
+        explanation: "An antiderivative of 3x² is x³.",
+      },
+      {
+        id: "calc-m6-q4",
+        question: "Why include +C in an indefinite integral?",
+        options: [
+          "Constants vanish under differentiation",
+          "To set bounds",
+          "To change units",
+          "Because integrals are negative",
+        ],
+        correctIndex: 0,
+        explanation: "All antiderivatives can differ by a constant.",
+      },
+      {
+        id: "calc-m6-q5",
+        question: "Evaluate ∫₀²3x² dx.",
+        options: [
+          "4",
+          "6",
+          "8",
+          "12",
+        ],
+        correctIndex: 2,
+        explanation: "Antiderivative x³ gives 8.",
+      },
+      {
+        id: "calc-m6-q6",
+        question: "If geometric area 5 lies below the x-axis, its integral contribution is...",
+        options: [
+          "5",
+          "-5",
+          "0",
+          "25",
+        ],
+        correctIndex: 1,
+        explanation: "Below-axis signed area is negative.",
+      },
+      {
+        id: "calc-m6-q7",
+        question: "For total geometric area, below-axis regions should be...",
+        options: [
+          "Ignored",
+          "Counted by positive magnitude",
+          "Left negative",
+          "Always doubled",
+        ],
+        correctIndex: 1,
+        explanation: "Total area adds magnitudes.",
+      },
+      {
+        id: "calc-m6-q8",
+        question: "As the number of equal Riemann rectangles increases on a fixed interval, each rectangle becomes...",
+        options: [
+          "Wider",
+          "Narrower",
+          "Taller by definition",
+          "Negative",
+        ],
+        correctIndex: 1,
+        explanation: "More partitions mean smaller widths.",
+      },
+    ],
+  },
+
+  {
+    key: "module-07-checkpoint",
+    courseSlug: "calculus-foundations",
+    type: "module-checkpoint",
+    moduleNumber: 7,
+    title: "Module 7 Checkpoint",
+    description: "Check the Fundamental Theorem, accumulation functions and integrated calculus reasoning.",
+    passingPercentage: 70,
+    questions: [
+      {
+        id: "calc-m7-q1",
+        question: "Integrating velocity over time gives...",
+        options: [
+          "Displacement",
+          "Acceleration",
+          "Speed only",
+          "Jerk",
+        ],
+        correctIndex: 0,
+        explanation: "The integral accumulates velocity into displacement.",
+      },
+      {
+        id: "calc-m7-q2",
+        question: "If F′=f, then ∫ₐᵇf(x)dx equals...",
+        options: [
+          "F(a)+F(b)",
+          "F(b)-F(a)",
+          "f(b)-f(a)",
+          "F′(b)",
+        ],
+        correctIndex: 1,
+        explanation: "FTC evaluation form uses upper minus lower.",
+      },
+      {
+        id: "calc-m7-q3",
+        question: "For A(x)=∫₀ˣf(t)dt, A′(x) equals...",
+        options: [
+          "f(x)",
+          "0",
+          "A(x)",
+          "f′(x)",
+        ],
+        correctIndex: 0,
+        explanation: "FTC recovers the integrand.",
+      },
+      {
+        id: "calc-m7-q4",
+        question: "If f(x)<0, A(x)=∫₀ˣf(t)dt is locally...",
+        options: [
+          "Increasing",
+          "Decreasing",
+          "Constant",
+          "Undefined",
+        ],
+        correctIndex: 1,
+        explanation: "A′=f is negative.",
+      },
+      {
+        id: "calc-m7-q5",
+        question: "If f changes from positive to negative, A has a...",
+        options: [
+          "Local maximum",
+          "Local minimum",
+          "Vertical asymptote",
+          "Removable hole",
+        ],
+        correctIndex: 0,
+        explanation: "A′ changes positive to negative.",
+      },
+      {
+        id: "calc-m7-q6",
+        question: "Which calculus tool is most direct for instantaneous speed?",
+        options: [
+          "Derivative",
+          "Definite integral",
+          "Riemann sum only",
+          "Average of endpoints",
+        ],
+        correctIndex: 0,
+        explanation: "Instantaneous speed is obtained from the derivative of position/velocity.",
+      },
+      {
+        id: "calc-m7-q7",
+        question: "Which tool is most direct for accumulated change from a varying rate?",
+        options: [
+          "Derivative",
+          "Definite integral",
+          "Factorisation only",
+          "Tangent line only",
+        ],
+        correctIndex: 1,
+        explanation: "Integrating the rate gives total change.",
+      },
+      {
+        id: "calc-m7-q8",
+        question: "FTC fundamentally links...",
+        options: [
+          "Probability and sampling",
+          "Differentiation and integration",
+          "Matrices and vectors",
+          "Algebra and geometry only",
+        ],
+        correctIndex: 1,
+        explanation: "FTC establishes the derivative-integral relationship.",
+      },
+    ],
+  },
+
+  {
+    key: "final-assessment",
+    courseSlug: "calculus-foundations",
+    type: "final-assessment",
+    title: "Calculus Foundations Final Assessment",
+    description: "A cumulative assessment across functions, limits, derivatives, differentiation rules, applications, integrals and the Fundamental Theorem of Calculus.",
+    passingPercentage: 70,
+    questions: [
+      {
+        id: "calc-final-q1",
+        question: "Which statement defines a function?",
+        options: [
+          "Each allowed input has exactly one output",
+          "Each input has two outputs",
+          "Every graph is linear",
+          "Every output is unique",
+        ],
+        correctIndex: 0,
+        explanation: "A function assigns each input exactly one output.",
+      },
+      {
+        id: "calc-final-q2",
+        question: "For f(x)=x², average rate of change from 1 to 3 is...",
+        options: [
+          "2",
+          "3",
+          "4",
+          "8",
+        ],
+        correctIndex: 2,
+        explanation: "(9-1)/(3-1)=4.",
+      },
+      {
+        id: "calc-final-q3",
+        question: "As a secant interval shrinks on a smooth curve, its slope may approach the...",
+        options: [
+          "x-intercept",
+          "tangent slope",
+          "area",
+          "maximum",
+        ],
+        correctIndex: 1,
+        explanation: "This motivates instantaneous rate.",
+      },
+      {
+        id: "calc-final-q4",
+        question: "A two-sided limit exists when...",
+        options: [
+          "f(a) is defined only",
+          "left and right limiting values agree",
+          "f′(a)=0",
+          "the graph crosses the axis",
+        ],
+        correctIndex: 1,
+        explanation: "One-sided limits must agree.",
+      },
+      {
+        id: "calc-final-q5",
+        question: "lim x→2 (x²-4)/(x-2) equals...",
+        options: [
+          "0",
+          "2",
+          "4",
+          "does not exist",
+        ],
+        correctIndex: 2,
+        explanation: "Factor and cancel to x+2.",
+      },
+      {
+        id: "calc-final-q6",
+        question: "Continuity at x=a requires...",
+        options: [
+          "defined value, existing limit and equality",
+          "only f′(a)=0",
+          "only a graph",
+          "only a finite domain",
+        ],
+        correctIndex: 0,
+        explanation: "These are the three continuity conditions.",
+      },
+      {
+        id: "calc-final-q7",
+        question: "A derivative is best described as...",
+        options: [
+          "instantaneous rate of change",
+          "total signed area",
+          "sample mean",
+          "domain size",
+        ],
+        correctIndex: 0,
+        explanation: "The derivative is a local rate/tangent slope.",
+      },
+      {
+        id: "calc-final-q8",
+        question: "If f′<0, f is locally...",
+        options: [
+          "increasing",
+          "decreasing",
+          "constant",
+          "always positive",
+        ],
+        correctIndex: 1,
+        explanation: "Negative derivative means local decrease.",
+      },
+      {
+        id: "calc-final-q9",
+        question: "Differentiate 4x³-2x.",
+        options: [
+          "12x²-2",
+          "4x²-2",
+          "12x³-2",
+          "12x²",
+        ],
+        correctIndex: 0,
+        explanation: "Apply the power rule.",
+      },
+      {
+        id: "calc-final-q10",
+        question: "Differentiate (3x+1)⁴.",
+        options: [
+          "4(3x+1)³",
+          "12(3x+1)³",
+          "12(3x+1)⁴",
+          "3(3x+1)³",
+        ],
+        correctIndex: 1,
+        explanation: "Chain rule multiplies by 3.",
+      },
+      {
+        id: "calc-final-q11",
+        question: "Differentiate sin(2x).",
+        options: [
+          "cos(2x)",
+          "2cos(2x)",
+          "-2sin(2x)",
+          "2sin(2x)",
+        ],
+        correctIndex: 1,
+        explanation: "Chain rule gives 2cos(2x).",
+      },
+      {
+        id: "calc-final-q12",
+        question: "The product rule is...",
+        options: [
+          "u′v′",
+          "u′v+uv′",
+          "u/v",
+          "u′+v′",
+        ],
+        correctIndex: 1,
+        explanation: "Both factor changes contribute.",
+      },
+      {
+        id: "calc-final-q13",
+        question: "If f′ changes from negative to positive, the function has a...",
+        options: [
+          "local maximum",
+          "local minimum",
+          "jump",
+          "vertical asymptote",
+        ],
+        correctIndex: 1,
+        explanation: "Decreasing then increasing gives a minimum.",
+      },
+      {
+        id: "calc-final-q14",
+        question: "If f″<0 at a stationary point, it is typically a...",
+        options: [
+          "local maximum",
+          "local minimum",
+          "removable discontinuity",
+          "zero of f always",
+        ],
+        correctIndex: 0,
+        explanation: "Negative second derivative means concave down.",
+      },
+      {
+        id: "calc-final-q15",
+        question: "In optimisation, a critical point outside the feasible domain is...",
+        options: [
+          "the answer",
+          "not a valid contextual candidate",
+          "always a maximum",
+          "always a minimum",
+        ],
+        correctIndex: 1,
+        explanation: "Constraints determine valid solutions.",
+      },
+      {
+        id: "calc-final-q16",
+        question: "If s(t) is position, acceleration is...",
+        options: [
+          "s′",
+          "s″",
+          "|s|",
+          "∫s",
+        ],
+        correctIndex: 1,
+        explanation: "Acceleration is the second derivative of position.",
+      },
+      {
+        id: "calc-final-q17",
+        question: "A definite integral is a measure of...",
+        options: [
+          "signed accumulation",
+          "tangent slope only",
+          "function count",
+          "domain width only",
+        ],
+        correctIndex: 0,
+        explanation: "Integrals accumulate signed contributions.",
+      },
+      {
+        id: "calc-final-q18",
+        question: "Find ∫4x³ dx.",
+        options: [
+          "x⁴+C",
+          "4x⁴+C",
+          "x³+C",
+          "12x²+C",
+        ],
+        correctIndex: 0,
+        explanation: "Reverse power rule gives x⁴+C.",
+      },
+      {
+        id: "calc-final-q19",
+        question: "Evaluate ∫₀¹2x dx.",
+        options: [
+          "0",
+          "1",
+          "2",
+          "4",
+        ],
+        correctIndex: 1,
+        explanation: "Antiderivative x² gives 1.",
+      },
+      {
+        id: "calc-final-q20",
+        question: "Geometric area 3 entirely below the x-axis contributes what to the integral?",
+        options: [
+          "3",
+          "-3",
+          "0",
+          "9",
+        ],
+        correctIndex: 1,
+        explanation: "Below-axis signed area is negative.",
+      },
+      {
+        id: "calc-final-q21",
+        question: "If F′=f, FTC gives ∫ₐᵇf =...",
+        options: [
+          "F(b)-F(a)",
+          "F(a)+F(b)",
+          "f(b)-f(a)",
+          "F′(a)",
+        ],
+        correctIndex: 0,
+        explanation: "Upper minus lower antiderivative value.",
+      },
+      {
+        id: "calc-final-q22",
+        question: "For A(x)=∫₀ˣf(t)dt, A′(x)=...",
+        options: [
+          "f(x)",
+          "0",
+          "f′(x)",
+          "A²",
+        ],
+        correctIndex: 0,
+        explanation: "FTC recovers the integrand.",
+      },
+      {
+        id: "calc-final-q23",
+        question: "Which tool is most direct for an instantaneous rate?",
+        options: [
+          "Derivative",
+          "Integral",
+          "Area only",
+          "Average of all values",
+        ],
+        correctIndex: 0,
+        explanation: "Derivatives measure instantaneous change.",
+      },
+      {
+        id: "calc-final-q24",
+        question: "Which final-answer check is most responsible?",
+        options: [
+          "Ignore units",
+          "Check sign, units, domain and context",
+          "Round before calculating",
+          "Assume every critical point is valid",
+        ],
+        correctIndex: 1,
+        explanation: "Responsible calculus includes interpretation and reasonableness checks.",
+      },
+    ],
+  },
 ];
