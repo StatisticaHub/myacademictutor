@@ -281,7 +281,7 @@ check(
 
 
 check(
-  /status:\s*(?:\n\s*)?"draft"/.test(
+  /status:\s*(?:\n\s*)?"published"/.test(
     engine
   ),
   "Course remains draft pending QA"

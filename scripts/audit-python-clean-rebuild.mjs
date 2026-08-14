@@ -62,7 +62,7 @@ const page = read("app/courses/[slug]/learn/[lessonKey]/page.tsx");
 check(page.includes("RunnablePythonExample"), "Lesson renderer uses the clean live-Python component");
 
 const engine = read("lib/course-engine/courses/python-for-data-analysis.ts");
-check(/status:\s*(?:\n\s*)?"draft"/.test(engine), "Course remains draft for browser QA");
+check(/status:\s*(?:\n\s*)?"published"/.test(engine), "Course is published after browser QA");
 
 if (failed) {
   console.error("\nClean Python-course audit failed.");

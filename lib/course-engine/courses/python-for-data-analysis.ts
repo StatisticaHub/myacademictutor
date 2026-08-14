@@ -22,7 +22,7 @@ export const pythonForDataAnalysisCourse:
     "undergraduate",
 
   status:
-    "draft",
+    "published",
 
   modules: [
 

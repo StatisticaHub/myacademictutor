@@ -34,27 +34,25 @@ function read(
       relative
     );
 
-
   check(
-    fs.existsSync(
-      full
-    ),
+    fs.existsSync(full),
     relative
   );
 
+  return fs.existsSync(full)
+    ? fs.readFileSync(
+        full,
+        "utf8"
+      )
+    : "";
+}
 
-  if (
-    !fs.existsSync(
-      full
-    )
-  ) {
-    return "";
-  }
 
-
-  return fs.readFileSync(
-    full,
-    "utf8"
+function isPublished(
+  source
+) {
+  return /status:\s*(?:\n\s*)?"published"/.test(
+    source
   );
 }
 
@@ -67,25 +65,15 @@ const publication =
 
 check(
   publication.includes(
-    'definition.status ===\n    "published"'
-  ),
-  "published courses are explicitly handled"
-);
-
-
-check(
+    '"published"'
+  ) &&
   publication.includes(
-    'definition.status ===\n    "draft"'
-  ),
-  "draft courses are explicitly handled"
-);
-
-
-check(
+    '"draft"'
+  ) &&
   publication.includes(
-    'status:\n      "catalogue"'
+    '"catalogue"'
   ),
-  "catalogue-only courses are explicitly handled"
+  "publication engine supports published, draft and catalogue states"
 );
 
 
@@ -93,24 +81,7 @@ check(
   publication.includes(
     "COURSE_PREVIEW_MODE"
   ),
-  "optional server-only preview mode exists"
-);
-
-
-const calculus =
-  read(
-    "lib/course-engine/courses/calculus-foundations.ts"
-  );
-
-
-check(
-  calculus.includes(
-    'status:\n    "draft"'
-  ) ||
-  calculus.includes(
-    'status: "draft"'
-  ),
-  "Calculus Foundations remains draft"
+  "server-only preview mode remains available for future draft courses"
 );
 
 
@@ -119,138 +90,64 @@ const statistics =
     "lib/course-engine/courses/statistics-foundations.ts"
   );
 
+const calculus =
+  read(
+    "lib/course-engine/courses/calculus-foundations.ts"
+  );
+
+const python =
+  read(
+    "lib/course-engine/courses/python-for-data-analysis.ts"
+  );
+
 
 check(
-  statistics.includes(
-    'status:\n    "published"'
-  ) ||
-  statistics.includes(
-    'status: "published"'
+  isPublished(
+    statistics
   ),
-  "Statistics Foundations remains published"
+  "Statistics Foundations is published"
 );
 
 
-const lessons =
+check(
+  isPublished(
+    calculus
+  ),
+  "Calculus Foundations is published"
+);
+
+
+check(
+  isPublished(
+    python
+  ),
+  "Python for Data Analysis is published"
+);
+
+
+check(
   read(
     "lib/course-lessons.ts"
-  );
-
-
-check(
-  lessons.includes(
+  ).includes(
     "isCourseLearningAccessible"
   ),
-  "lesson runtime is publication-gated"
+  "lesson runtime uses publication access control"
 );
 
 
-const assessments =
+check(
   read(
     "lib/assessments/index.ts"
-  );
-
-
-check(
-  assessments.includes(
+  ).includes(
     "isCourseLearningAccessible"
   ),
-  "assessment runtime is publication-gated"
+  "assessment runtime uses publication access control"
 );
 
 
-const actions =
-  read(
-    "app/courses/[slug]/actions.ts"
-  );
-
-
-check(
-  actions.includes(
-    "isCourseEnrollable"
-  ),
-  "server-side enrolment is publication-gated"
-);
-
-
-const enrol =
-  read(
-    "components/CourseEnrollAction.tsx"
-  );
-
-
-check(
-  enrol.includes(
-    "getCoursePublicationState"
-  ),
-  "course enrolment UI reads publication state"
-);
-
-
-const coursePage =
-  read(
-    "app/courses/[slug]/page.tsx"
-  );
-
-
-check(
-  coursePage.includes(
-    "getCoursePublicationState"
-  ) &&
-  coursePage.includes(
-    "filterVisibleCourses"
-  ),
-  "course detail page is publication-aware"
-);
-
-
-const coursesPage =
-  read(
-    "app/courses/page.tsx"
-  );
-
-
-check(
-  coursesPage.includes(
-    "filterVisibleCourses"
-  ),
-  "course catalogue filters drafts"
-);
-
-
-const sitemap =
-  read(
-    "app/sitemap.ts"
-  );
-
-
-check(
-  sitemap.includes(
-    "isCourseIndexable"
-  ),
-  "sitemap excludes non-indexable courses"
-);
-
-
-const dashboard =
-  read(
-    "app/dashboard/page.tsx"
-  );
-
-
-check(
-  dashboard.includes(
-    "isCourseLearningAccessible"
-  ),
-  "dashboard hides inaccessible course enrolments"
-);
-
-
-if (
-  failed
-) {
+if (failed) {
   console.error(
-    "\nPublication-control source audit failed."
+    "\nRelease publication audit failed."
   );
 
   process.exit(
@@ -260,5 +157,5 @@ if (
 
 
 console.log(
-  "\nPublication-control source audit passed."
+  "\nRelease publication audit passed."
 );

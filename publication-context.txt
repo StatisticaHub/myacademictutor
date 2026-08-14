@@ -1,0 +1,2863 @@
+================ ACTIONS ================
+"use server";
+
+import {
+  revalidatePath,
+} from "next/cache";
+
+import {
+  redirect,
+} from "next/navigation";
+
+import {
+  getCourse,
+} from "@/lib/data";
+
+import {
+  getFirstLesson,
+} from "@/lib/course-lessons";
+
+import {
+  buildCourseProgress,
+} from "@/lib/course-progress";
+
+import {
+  createClient,
+} from "@/lib/supabase/server";
+
+
+export async function enrollInCourse(
+  formData: FormData
+) {
+  const courseSlug =
+    String(
+      formData.get(
+        "courseSlug"
+      ) ??
+        ""
+    ).trim();
+
+
+  const course =
+    getCourse(
+      courseSlug
+    );
+
+
+  if (!course) {
+    redirect(
+      "/courses"
+    );
+  }
+
+
+  const firstLesson =
+    getFirstLesson(
+      courseSlug
+    );
+
+
+  if (!firstLesson) {
+    redirect(
+      `/courses/${courseSlug}`
+    );
+  }
+
+
+  const supabase =
+    await createClient();
+
+
+  const {
+    data:
+      claimsData,
+    error:
+      claimsError,
+  } =
+    await supabase
+      .auth
+      .getClaims();
+
+
+  const userId =
+    typeof claimsData
+      ?.claims
+      ?.sub ===
+    "string"
+      ? claimsData
+          .claims
+          .sub
+      : null;
+
+
+  if (
+    claimsError ||
+    !userId
+  ) {
+    redirect(
+      `/login?next=${encodeURIComponent(
+        `/courses/${courseSlug}`
+      )}&message=${encodeURIComponent(
+        "Sign in to start this course."
+      )}`
+    );
+  }
+
+
+  const now =
+    new Date()
+      .toISOString();
+
+
+  const {
+    error:
+      enrolmentError,
+  } =
+    await supabase
+      .from(
+        "enrollments"
+      )
+      .upsert(
+        {
+          user_id:
+            userId,
+
+          course_slug:
+            courseSlug,
+
+          last_opened_at:
+            now,
+        },
+        {
+          onConflict:
+            "user_id,course_slug",
+        }
+      );
+
+
+  if (
+    enrolmentError
+  ) {
+    redirect(
+      `/courses/${courseSlug}?error=${encodeURIComponent(
+        "We could not enrol you in this course. Please try again."
+      )}`
+    );
+  }
+
+
+  revalidatePath(
+    "/dashboard"
+  );
+
+  revalidatePath(
+    `/courses/${courseSlug}`
+  );
+
+
+  redirect(
+    `/courses/${courseSlug}/learn/${firstLesson.key}`
+  );
+}
+
+
+export async function continueCourse(
+  formData: FormData
+) {
+  const courseSlug =
+    String(
+      formData.get(
+        "courseSlug"
+      ) ??
+        ""
+    ).trim();
+
+
+  const course =
+    getCourse(
+      courseSlug
+    );
+
+
+  if (!course) {
+    redirect(
+      "/courses"
+    );
+  }
+
+
+  const supabase =
+    await createClient();
+
+
+  const {
+    data:
+      claimsData,
+    error:
+      claimsError,
+  } =
+    await supabase
+      .auth
+      .getClaims();
+
+
+  const userId =
+    typeof claimsData
+      ?.claims
+      ?.sub ===
+    "string"
+      ? claimsData
+          .claims
+          .sub
+      : null;
+
+
+  if (
+    claimsError ||
+    !userId
+  ) {
+    redirect(
+      `/login?next=${encodeURIComponent(
+        `/courses/${courseSlug}`
+      )}`
+    );
+  }
+
+
+  const [
+    enrolmentResult,
+    progressResult,
+    attemptsResult,
+  ] =
+    await Promise.all([
+
+      supabase
+        .from(
+          "enrollments"
+        )
+        .select(
+          "course_slug"
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "course_slug",
+          courseSlug
+        )
+        .maybeSingle(),
+
+      supabase
+        .from(
+          "lesson_progress"
+        )
+        .select(
+          "lesson_key"
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "course_slug",
+          courseSlug
+        )
+        .eq(
+          "completed",
+          true
+        ),
+
+      supabase
+        .from(
+          "assessment_attempts"
+        )
+        .select(
+          "assessment_key"
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "course_slug",
+          courseSlug
+        )
+        .eq(
+          "passed",
+          true
+        ),
+    ]);
+
+
+  if (
+    !enrolmentResult
+      .data
+  ) {
+    redirect(
+      `/courses/${courseSlug}`
+    );
+  }
+
+
+  const completedKeys =
+    (
+      progressResult
+        .data ??
+      []
+    ).map(
+      (item) =>
+        item.lesson_key
+    );
+
+
+  const passedKeys =
+    (
+      attemptsResult
+        .data ??
+      []
+    ).map(
+      (item) =>
+        item.assessment_key
+    );
+
+
+  const summary =
+    buildCourseProgress(
+      courseSlug,
+      completedKeys,
+      passedKeys
+    );
+
+
+  await supabase
+    .from(
+      "enrollments"
+    )
+    .update({
+      last_opened_at:
+        new Date()
+          .toISOString(),
+    })
+    .eq(
+      "user_id",
+      userId
+    )
+    .eq(
+      "course_slug",
+      courseSlug
+    );
+
+
+  revalidatePath(
+    "/dashboard"
+  );
+
+  revalidatePath(
+    `/courses/${courseSlug}`
+  );
+
+
+  redirect(
+    summary.nextHref
+  );
+}
+
+================ ENROL COMPONENT ================
+import Link from "next/link";
+
+import {
+  continueCourse,
+  enrollInCourse,
+} from "@/app/courses/[slug]/actions";
+
+import {
+  buildCourseProgress,
+} from "@/lib/course-progress";
+
+import {
+  createClient,
+} from "@/lib/supabase/server";
+
+
+type CourseEnrollActionProps = {
+  courseSlug: string;
+};
+
+
+export default async function CourseEnrollAction({
+  courseSlug,
+}: CourseEnrollActionProps) {
+
+  const supabase =
+    await createClient();
+
+
+  const {
+    data:
+      claimsData,
+  } =
+    await supabase
+      .auth
+      .getClaims();
+
+
+  const userId =
+    typeof claimsData
+      ?.claims
+      ?.sub ===
+    "string"
+      ? claimsData
+          .claims
+          .sub
+      : null;
+
+
+  let enrolled =
+    false;
+
+
+  let completedKeys:
+    string[] = [];
+
+
+  let passedKeys:
+    string[] = [];
+
+
+  if (userId) {
+    const [
+      enrolmentResult,
+      progressResult,
+      attemptsResult,
+    ] =
+      await Promise.all([
+
+        supabase
+          .from(
+            "enrollments"
+          )
+          .select(
+            "course_slug"
+          )
+          .eq(
+            "user_id",
+            userId
+          )
+          .eq(
+            "course_slug",
+            courseSlug
+          )
+          .maybeSingle(),
+
+        supabase
+          .from(
+            "lesson_progress"
+          )
+          .select(
+            "lesson_key"
+          )
+          .eq(
+            "user_id",
+            userId
+          )
+          .eq(
+            "course_slug",
+            courseSlug
+          )
+          .eq(
+            "completed",
+            true
+          ),
+
+        supabase
+          .from(
+            "assessment_attempts"
+          )
+          .select(
+            "assessment_key"
+          )
+          .eq(
+            "user_id",
+            userId
+          )
+          .eq(
+            "course_slug",
+            courseSlug
+          )
+          .eq(
+            "passed",
+            true
+          ),
+      ]);
+
+
+    enrolled =
+      Boolean(
+        enrolmentResult
+          .data
+      );
+
+
+    completedKeys =
+      (
+        progressResult
+          .data ??
+        []
+      ).map(
+        (item) =>
+          item.lesson_key
+      );
+
+
+    passedKeys =
+      (
+        attemptsResult
+          .data ??
+        []
+      ).map(
+        (item) =>
+          item.assessment_key
+      );
+  }
+
+
+  if (enrolled) {
+    const summary =
+      buildCourseProgress(
+        courseSlug,
+        completedKeys,
+        passedKeys
+      );
+
+
+    return (
+      <div className="course-enrol-action">
+
+        <div className="course-enrol-status">
+
+          <span>
+            ✓
+          </span>
+
+
+          <div>
+
+            <strong>
+              {summary.courseComplete
+                ? "Course complete"
+                : "Course added"}
+            </strong>
+
+            <small>
+              {summary.courseComplete
+                ? "All required learning and assessments are complete."
+                : summary.nextKind ===
+                    "checkpoint"
+                  ? "Your next step is a module checkpoint."
+                  : summary.nextKind ===
+                      "final"
+                    ? "Your final assessment is ready."
+                    : "Continue from your next required lesson."}
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div className="course-enrol-progress-mini">
+
+          <span>
+            Lessons{" "}
+            <strong>
+              {summary.completedLessons}
+              /{summary.totalLessons}
+            </strong>
+          </span>
+
+
+          {summary.totalCheckpoints >
+            0 && (
+            <span>
+              Checkpoints{" "}
+              <strong>
+                {summary.passedCheckpoints}
+                /{summary.totalCheckpoints}
+              </strong>
+            </span>
+          )}
+
+
+          {summary.finalAssessmentExists && (
+            <span>
+              Final{" "}
+              <strong>
+                {summary.finalAssessmentStatus ===
+                "passed"
+                  ? "Passed"
+                  : summary.finalAssessmentStatus ===
+                      "ready"
+                    ? "Ready"
+                    : "Locked"}
+              </strong>
+            </span>
+          )}
+
+        </div>
+
+
+        <div className="course-enrol-buttons">
+
+          <form
+            action={
+              continueCourse
+            }
+          >
+            <input
+              type="hidden"
+              name="courseSlug"
+              value={
+                courseSlug
+              }
+            />
+
+            <button
+              type="submit"
+              className="button"
+            >
+              {summary.nextActionLabel}
+            </button>
+          </form>
+
+
+          <Link
+            href="/dashboard"
+            className="button button-outline"
+          >
+            Dashboard
+          </Link>
+
+        </div>
+
+      </div>
+    );
+  }
+
+
+  return (
+    <form
+      action={
+        enrollInCourse
+      }
+      className="course-enrol-form"
+    >
+
+      <input
+        type="hidden"
+        name="courseSlug"
+        value={
+          courseSlug
+        }
+      />
+
+
+      <button
+        type="submit"
+        className="button course-start-button"
+      >
+        Start this course
+      </button>
+
+
+      <span>
+        Add this course to your
+        learner dashboard and begin
+        Lesson 1.
+      </span>
+
+    </form>
+  );
+}
+
+================ COURSE PAGE TOP ================
+import type { Metadata } from "next";
+
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import CourseCard from "@/components/CourseCard";
+import CourseEnrollAction from "@/components/CourseEnrollAction";
+import Icon from "@/components/Icon";
+import SectionHeading from "@/components/SectionHeading";
+
+import {
+  courses,
+  getCourse,
+  getLevel,
+  getSubject,
+  relatedCourses,
+} from "@/lib/data";
+
+
+/* ==========================================================================
+   STATIC ROUTES
+   ========================================================================== */
+
+export function generateStaticParams() {
+  return courses.map((course) => ({
+    slug: course.slug,
+  }));
+}
+
+
+/* ==========================================================================
+   METADATA
+   ========================================================================== */
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{
+    slug: string;
+  }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  const course = getCourse(slug);
+
+  if (!course) {
+    return {
+      title: "Course",
+    };
+  }
+
+  const subject = getSubject(
+    course.subject
+  );
+
+  const level = getLevel(
+    course.level
+  );
+
+
+  return {
+    title: course.title,
+
+    description:
+      course.description,
+
+    openGraph: {
+      title:
+        `${course.title} | My Academic Tutor`,
+
+      description:
+        course.description,
+    },
+
+    keywords: [
+      course.title,
+      subject?.name ?? "",
+      level?.name ?? "",
+      ...course.skills,
+    ].filter(Boolean),
+  };
+}
+
+
+/* ==========================================================================
+   LEVEL HELPERS
+   ========================================================================== */
+
+function getLevelLabel(
+  level: string
+) {
+  switch (level) {
+    case "high-school":
+      return "High School";
+
+    case "undergraduate":
+      return "Undergraduate";
+
+    case "postgraduate":
+      return "Postgraduate";
+
+    case "casual":
+      return "Learn for Yourself";
+
+    default:
+      return "Course";
+  }
+}
+
+
+function getRecommendedBackground(
+  level: string
+) {
+  switch (level) {
+    case "high-school":
+      return {
+        title:
+          "Beginner-friendly",
+
+        copy:
+          "No advanced prior knowledge is expected. The course is designed to build understanding step by step.",
+      };
+
+    case "undergraduate":
+      return {
+        title:
+          "University foundations",
+
+        copy:
+          "Some familiarity with basic quantitative reasoning is useful, but important concepts are developed carefully throughout the course.",
+      };
+
+    case "postgraduate":
+      return {
+        title:
+          "Advanced study",
+
+        copy:
+          "This course is best suited to learners with relevant undergraduate-level foundations or equivalent practical experience.",
+      };
+
+    case "casual":
+      return {
+        title:
+          "Flexible entry",
+
+        copy:
+          "Designed for independent learners. Start with the foundations and progress at your own pace.",
+      };
+
+    default:
+      return {
+        title:
+          "Structured learning",
+
+        copy:
+          "Follow the course progressively from the opening module.",
+      };
+  }
+}
+
+
+/* ==========================================================================
+   PAGE
+   ========================================================================== */
+
+export default async function CoursePage({
+  params,
+}: {
+  params: Promise<{
+    slug: string;
+  }>;
+}) {
+  const { slug } =
+    await params;
+
+  const course =
+    getCourse(slug);
+
+
+  if (!course) {
+    notFound();
+  }
+
+
+  const subject =
+    getSubject(
+      course.subject
+    );
+
+  const level =
+    getLevel(
+      course.level
+    );
+
+
+  if (
+    !subject ||
+    !level
+  ) {
+    notFound();
+  }
+
+
+  const recommendations =
+    relatedCourses(
+      course.slug,
+      3
+    );
+
+  const background =
+    getRecommendedBackground(
+      course.level
+    );
+
+  const levelLabel =
+    getLevelLabel(
+      course.level
+    );
+
+
+  return (
+    <>
+
+      {/* ==================================================================
+          HERO
+         ================================================================== */}
+
+      <section className="page-hero">
+        <div className="shell course-hero">
+
+          {/* --------------------------------------------------------------
+              MAIN HERO
+             -------------------------------------------------------------- */}
+
+          <div>
+
+            <div className="breadcrumbs">
+              Home / Courses / {course.title}
+            </div>
+
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "wrap",
+                marginTop: "30px",
+              }}
+            >
+
+              <Link
+                href={`/subjects/${subject.slug}`}
+                className={`mini-symbol ${subject.accent}`}
+                aria-label={`Explore ${subject.name}`}
+              >
+                {subject.symbol}
+              </Link>
+
+
+              <span className="eyebrow">
+                {subject.name}
+              </span>
+
+
+              <span
+                style={{
+                  color: "#b1aba0",
+                  fontSize: "11px",
+                }}
+                aria-hidden="true"
+              >
+                •
+              </span>
+
+
+              <span className="eyebrow">
+                {levelLabel}
+              </span>
+
+            </div>
+
+
+            <h1>
+              {course.title}
+            </h1>
+
+
+            <p>
+              {course.description}
+            </p>
+
+
+            {/* REAL LEARNER ENROLMENT */}
+
+            <CourseEnrollAction
+              courseSlug={
+                course.slug
+              }
+            />
+
+
+            <div className="hero-actions">
+
+              <Link
+                href="#curriculum"
+                className="button"
+              >
+                Explore curriculum
+
+                <Icon
+                  name="arrow"
+                  size={16}
+                />
+              </Link>
+
+
+              <Link
+                href="/contact"
+                className="button button-outline"
+              >
+                Ask about this course
+              </Link>
+
+            </div>
+
+
+            <div className="hero-proof">
+
+              <span>
+                <Icon
+                  name="check"
+                  size={14}
+                />
+
+                {course.lessons} lessons
+              </span>
+
+
+
+================ COURSES PAGE ================
+import type { Metadata } from "next";
+import Link from "next/link";
+
+import CourseCard from "@/components/CourseCard";
+import Icon from "@/components/Icon";
+import SectionHeading from "@/components/SectionHeading";
+
+import {
+  courses,
+  featuredCourses,
+  levels,
+  subjectCourses,
+  subjects,
+} from "@/lib/data";
+
+
+/* ==========================================================================
+   METADATA
+   ========================================================================== */
+
+export const metadata: Metadata = {
+  title: "Courses",
+
+  description:
+    "Explore courses in Statistics, Mathematics, Data Science, Bioinformatics and Computer Science for school, university and independent learners.",
+};
+
+
+/* ==========================================================================
+   PAGE
+   ========================================================================== */
+
+export default function CoursesPage() {
+  const highlightedCourses = featuredCourses().slice(0, 6);
+
+  return (
+    <>
+      {/* ==================================================================
+          HERO
+         ================================================================== */}
+
+      <section className="page-hero">
+        <div className="shell">
+          <div className="breadcrumbs">
+            Home / Courses
+          </div>
+
+          <span
+            className="eyebrow"
+            style={{
+              display: "inline-block",
+              marginTop: "30px",
+            }}
+          >
+            Structured learning
+          </span>
+
+          <h1>
+            Courses built to
+            <br />
+            take you somewhere.
+          </h1>
+
+          <p>
+            Explore focused courses across Statistics, Mathematics,
+            Data Science, Bioinformatics and Computer Science.
+            Learn one topic deeply or combine courses into a broader
+            academic or career pathway.
+          </p>
+
+          <div className="hero-actions">
+            <Link
+              href="#catalogue"
+              className="button"
+            >
+              Browse courses
+
+              <Icon
+                name="arrow"
+                size={16}
+              />
+            </Link>
+
+            <Link
+              href="/learning"
+              className="button button-outline"
+            >
+              Find my learning path
+            </Link>
+          </div>
+
+          <div className="hero-proof">
+            <span>
+              <Icon
+                name="check"
+                size={14}
+              />
+
+              {courses.length} courses
+            </span>
+
+            <span>
+              <Icon
+                name="check"
+                size={14}
+              />
+
+              5 subject areas
+            </span>
+
+            <span>
+              <Icon
+                name="check"
+                size={14}
+              />
+
+              4 learning routes
+            </span>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ==================================================================
+          QUICK SUBJECT NAVIGATION
+         ================================================================== */}
+
+      <section className="trust-strip">
+        <div className="shell">
+          <div className="course-directory-nav">
+            <span className="course-directory-label">
+              Jump to subject
+            </span>
+
+            {subjects.map((subject) => (
+              <Link
+                key={subject.slug}
+                href={`#${subject.slug}`}
+                className={`course-directory-link ${subject.accent}`}
+              >
+                <span className="course-directory-symbol">
+                  {subject.symbol}
+                </span>
+
+                {subject.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ==================================================================
+          FEATURED COURSES
+         ================================================================== */}
+
+      <section className="section">
+        <div className="shell">
+          <SectionHeading
+            eyebrow="Recommended starting points"
+            title="Popular courses across the platform."
+            description="These courses represent useful entry points into some of our most important quantitative and computational learning areas."
+          />
+
+          <div className="course-grid">
+            {highlightedCourses.map((course) => (
+              <CourseCard
+                key={course.slug}
+                course={course}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ==================================================================
+          CHOOSE LEVEL
+         ================================================================== */}
+
+      <section className="section soft">
+        <div className="shell">
+          <SectionHeading
+            eyebrow="Browse by stage"
+            title="Study at the level that matches you."
+            description="The same discipline can require very different depth depending on whether you are preparing for school exams, studying at university, conducting research or learning independently."
+          />
+
+          <div className="level-grid">
+            {levels.map((level, index) => {
+              const count = courses.filter(
+                (course) =>
+                  course.level === level.slug
+              ).length;
+
+              return (
+                <Link
+                  key={level.slug}
+                  href={`/learning?level=${level.slug}`}
+                  className="level-card"
+                >
+                  <span className="num">
+                    {String(index + 1).padStart(
+                      2,
+                      "0"
+                    )}
+                  </span>
+
+                  <h3>
+                    {level.name}
+                  </h3>
+
+                  <small>
+                    {count} courses
+                  </small>
+
+                  <p>
+                    {level.copy}
+                  </p>
+
+                  <div className="level-card-footer">
+                    <span>
+                      Explore this level
+                    </span>
+
+                    <Icon
+                      name="arrow"
+                      size={15}
+                    />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ==================================================================
+          COMPLETE CATALOGUE
+         ================================================================== */}
+
+      <section
+        className="section"
+        id="catalogue"
+      >
+        <div className="shell">
+          <SectionHeading
+            eyebrow="Complete catalogue"
+            title="Explore courses by subject."
+            description="Every subject has its own progression from foundations through university study to specialist and practical applications."
+          />
+
+          <div className="course-catalogue-stack">
+            {subjects.map((subject) => {
+              const subjectCourseList =
+                subjectCourses(subject.slug);
+
+              return (
+                <section
+                  key={subject.slug}
+                  id={subject.slug}
+                  className="course-subject-section"
+                >
+                  {/* ------------------------------------------------------
+                      Subject heading
+                     ------------------------------------------------------ */}
+
+                  <div className="course-subject-header">
+                    <div className="course-subject-heading">
+                      <span
+                        className={`mini-symbol ${subject.accent}`}
+                      >
+                        {subject.symbol}
+                      </span>
+
+                      <div>
+                        <span className="eyebrow">
+                          {subject.eyebrow}
+                        </span>
+
+                        <h2>
+                          {subject.name}
+                        </h2>
+                      </div>
+                    </div>
+
+                    <div className="course-subject-actions">
+                      <span className="course-count">
+                        {subjectCourseList.length}{" "}
+                        {subjectCourseList.length === 1
+                          ? "course"
+                          : "courses"}
+                      </span>
+
+                      <Link
+                        href={`/subjects/${subject.slug}`}
+                        className="button button-outline"
+                      >
+                        Explore subject
+
+                        <Icon
+                          name="arrow"
+                          size={15}
+                        />
+                      </Link>
+                    </div>
+                  </div>
+
+
+                  {/* ------------------------------------------------------
+                      Level availability
+                     ------------------------------------------------------ */}
+
+                  <div className="course-level-strip">
+                    {levels.map((level) => {
+                      const count =
+                        subjectCourseList.filter(
+                          (course) =>
+                            course.level ===
+                            level.slug
+                        ).length;
+
+                      return (
+                        <Link
+                          key={level.slug}
+                          href={`/subjects/${subject.slug}/${level.slug}`}
+                          className="course-level-chip"
+                        >
+                          <span>
+                            {level.name}
+                          </span>
+
+                          <strong>
+                            {count}
+                          </strong>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+
+                  {/* ------------------------------------------------------
+                      Courses
+                     ------------------------------------------------------ */}
+
+                  {subjectCourseList.length > 0 ? (
+                    <div className="course-grid">
+                      {subjectCourseList.map(
+                        (course) => (
+                          <CourseCard
+                            key={course.slug}
+                            course={course}
+                          />
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      More {subject.name} courses
+                      are being prepared.
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ==================================================================
+          HOW COURSES FIT TOGETHER
+         ================================================================== */}
+
+      <section className="section dark">
+        <div className="shell">
+          <SectionHeading
+            eyebrow="More than a catalogue"
+            title="A course is one step. A pathway gives it direction."
+            description="Rather than collecting unrelated certificates, combine courses deliberately so each one contributes to a larger academic, technical or career goal."
+          />
+
+          <div className="level-grid">
+            <div className="level-card course-dark-card">
+              <span className="num">
+                01
+              </span>
+
+              <h3>
+                Choose your goal
+              </h3>
+
+              <small>
+                Know what you are building towards
+              </small>
+
+              <p>
+                Start from an exam, university
+                module, skill, research need or
+                career objective.
+              </p>
+            </div>
+
+
+            <div className="level-card course-dark-card">
+              <span className="num">
+                02
+              </span>
+
+              <h3>
+                Build foundations
+              </h3>
+
+              <small>
+                Fill the gaps first
+              </small>
+
+              <p>
+                Learn the mathematical,
+                statistical or programming
+                foundations required for more
+                advanced work.
+              </p>
+            </div>
+
+
+            <div className="level-card course-dark-card">
+              <span className="num">
+                03
+              </span>
+
+              <h3>
+                Go deeper
+              </h3>
+
+              <small>
+                Progress deliberately
+              </small>
+
+              <p>
+                Move from foundational courses
+                into advanced methods and
+                specialist applications.
+              </p>
+            </div>
+
+
+            <div className="level-card course-dark-card">
+              <span className="num">
+                04
+              </span>
+
+              <h3>
+                Apply it
+              </h3>
+
+              <small>
+                Turn learning into capability
+              </small>
+
+              <p>
+                Use what you learn in exams,
+                coding tasks, projects, data
+                analyses and research.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: "32px",
+            }}
+          >
+            <Link
+              href="/pathways"
+              className="button button-white"
+            >
+              Explore learning pathways
+
+              <Icon
+                name="arrow"
+                size={16}
+              />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ==================================================================
+          INTERACTIVE LEARNING
+         ================================================================== */}
+
+      <section className="section soft">
+        <div className="shell">
+          <div className="cta-band">
+            <div>
+              <span className="eyebrow light">
+                Beyond video lessons
+              </span>
+
+              <h2>
+                Learn difficult ideas by interacting with them.
+              </h2>
+            </div>
+
+            <div>
+              <p>
+                Use interactive labs, visual
+                demonstrations and applied
+                exercises alongside courses to
+                build intuition rather than
+                relying only on passive content.
+              </p>
+
+              <div className="course-cta-actions">
+                <Link
+                  href="/labs"
+                  className="button button-white"
+                >
+                  Explore interactive labs
+
+                  <Icon
+                    name="arrow"
+                    size={16}
+                  />
+                </Link>
+
+                <Link
+                  href="/resources"
+                  className="button course-dark-outline"
+                >
+                  Browse resources
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ==================================================================
+          FINAL CTA
+         ================================================================== */}
+
+      <section className="section">
+        <div className="shell">
+          <div className="courses-final-cta">
+            <span className="eyebrow">
+              Still unsure?
+            </span>
+
+            <h2>
+              Don&apos;t choose a random course.
+              <br />
+              Find the right starting point.
+            </h2>
+
+            <p>
+              Tell us your subject, current level
+              and goal and use the Learning Path
+              Finder to identify a sensible route
+              through the platform.
+            </p>
+
+            <div className="hero-actions">
+              <Link
+                href="/learning"
+                className="button"
+              >
+                Find my learning path
+
+                <Icon
+                  name="arrow"
+                  size={16}
+                />
+              </Link>
+
+              <Link
+                href="/tutoring"
+                className="button button-outline"
+              >
+                Ask an expert
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+================ SITEMAP ================
+import type { MetadataRoute } from "next";
+
+import {
+  countries,
+  courses,
+  levels,
+  pathways,
+  subjects,
+} from "@/lib/data";
+
+
+/* ==========================================================================
+   SITE URL
+   ========================================================================== */
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(
+    /\/$/,
+    ""
+  ) ||
+  "https://www.myacademictutor.com";
+
+
+/* ==========================================================================
+   HELPERS
+   ========================================================================== */
+
+function url(
+  path: string
+) {
+  return `${siteUrl}${path}`;
+}
+
+
+/* ==========================================================================
+   SITEMAP
+   ========================================================================== */
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  /* ------------------------------------------------------------------------
+     Main public pages
+     ------------------------------------------------------------------------ */
+
+  const staticPages: MetadataRoute.Sitemap = [
+    {
+      url: url("/"),
+      changeFrequency: "weekly",
+      priority: 1,
+    },
+
+    {
+      url: url("/subjects"),
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
+
+    {
+      url: url("/courses"),
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
+
+    {
+      url: url("/learning"),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+
+    {
+      url: url("/pathways"),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+
+    {
+      url: url("/labs"),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+
+    {
+      url: url("/tutoring"),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+
+    {
+      url: url("/resources"),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+
+    {
+      url: url("/countries"),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+
+    {
+      url: url("/pricing"),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+
+    {
+      url: url("/about"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+
+    {
+      url: url("/contact"),
+      changeFrequency: "monthly",
+      priority: 0.65,
+    },
+
+    {
+      url: url("/academic-integrity"),
+      changeFrequency: "monthly",
+      priority: 0.55,
+    },
+
+    {
+      url: url("/certificate-policy"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+
+    {
+      url: url("/privacy"),
+      changeFrequency: "yearly",
+      priority: 0.35,
+    },
+
+    {
+      url: url("/terms"),
+      changeFrequency: "yearly",
+      priority: 0.35,
+    },
+
+    {
+      url: url("/cookies"),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+  ];
+
+
+  /* ------------------------------------------------------------------------
+     Subject pages
+     ------------------------------------------------------------------------ */
+
+  const subjectPages: MetadataRoute.Sitemap =
+    subjects.map(
+      (subject) => ({
+        url: url(
+          `/subjects/${subject.slug}`
+        ),
+
+        changeFrequency:
+          "weekly",
+
+        priority: 0.9,
+      })
+    );
+
+
+  /* ------------------------------------------------------------------------
+     Subject × level pages
+     ------------------------------------------------------------------------ */
+
+  const subjectLevelPages: MetadataRoute.Sitemap =
+    subjects.flatMap(
+      (subject) =>
+        levels.map(
+          (level) => ({
+            url: url(
+              `/subjects/${subject.slug}/${level.slug}`
+            ),
+
+            changeFrequency:
+              "weekly",
+
+            priority: 0.82,
+          })
+        )
+    );
+
+
+  /* ------------------------------------------------------------------------
+     Course pages
+     ------------------------------------------------------------------------ */
+
+  const coursePages: MetadataRoute.Sitemap =
+    courses.map(
+      (course) => ({
+        url: url(
+          `/courses/${course.slug}`
+        ),
+
+        changeFrequency:
+          "weekly",
+
+        priority:
+          course.featured
+            ? 0.9
+            : 0.8,
+      })
+    );
+
+
+  /* ------------------------------------------------------------------------
+     Pathway pages
+     ------------------------------------------------------------------------ */
+
+  const pathwayPages: MetadataRoute.Sitemap =
+    pathways.map(
+      (pathway) => ({
+        url: url(
+          `/pathways/${pathway.slug}`
+        ),
+
+        changeFrequency:
+          "weekly",
+
+        priority: 0.82,
+      })
+    );
+
+
+  /* ------------------------------------------------------------------------
+     Country pages
+     ------------------------------------------------------------------------ */
+
+  const countryPages: MetadataRoute.Sitemap =
+    countries.map(
+      (country) => ({
+        url: url(
+          `/countries/${country.slug}`
+        ),
+
+        changeFrequency:
+          "monthly",
+
+        priority: 0.72,
+      })
+    );
+
+
+  /* ------------------------------------------------------------------------
+     Final sitemap
+     ------------------------------------------------------------------------ */
+
+  return [
+    ...staticPages,
+    ...subjectPages,
+    ...subjectLevelPages,
+    ...coursePages,
+    ...pathwayPages,
+    ...countryPages,
+  ];
+}
+================ DASHBOARD TOP ================
+import type {
+  Metadata,
+} from "next";
+
+import Link from "next/link";
+
+import {
+  redirect,
+} from "next/navigation";
+
+import {
+  continueCourse,
+} from "@/app/courses/[slug]/actions";
+
+import {
+  buildCourseProgress,
+} from "@/lib/course-progress";
+
+import {
+  getCourse,
+} from "@/lib/data";
+
+import {
+  createClient,
+} from "@/lib/supabase/server";
+
+
+export const metadata:
+  Metadata = {
+
+  title:
+    "Learner Dashboard",
+
+  description:
+    "Your My Academic Tutor learner dashboard.",
+
+  robots: {
+    index:
+      false,
+    follow:
+      false,
+  },
+};
+
+
+function formatDate(
+  value:
+    string |
+    null
+) {
+  if (!value) {
+    return null;
+  }
+
+
+  return new Intl
+    .DateTimeFormat(
+      "en-GB",
+      {
+        day:
+          "numeric",
+
+        month:
+          "short",
+
+        year:
+          "numeric",
+      }
+    )
+    .format(
+      new Date(
+        value
+      )
+    );
+}
+
+
+export default async function DashboardPage() {
+
+  const supabase =
+    await createClient();
+
+
+  const {
+    data:
+      claimsData,
+    error:
+      claimsError,
+  } =
+    await supabase
+      .auth
+      .getClaims();
+
+
+  const claims =
+    claimsData
+      ?.claims;
+
+
+  if (
+    claimsError ||
+    !claims?.sub
+  ) {
+    redirect(
+      "/login"
+    );
+  }
+
+
+  const userId =
+    claims.sub;
+
+
+  const email =
+    typeof claims
+      .email ===
+    "string"
+      ? claims.email
+      : "";
+
+
+  const [
+    profileResult,
+    enrolmentsResult,
+    progressResult,
+    attemptsResult,
+    certificatesResult,
+  ] =
+    await Promise.all([
+
+      supabase
+        .from(
+          "profiles"
+        )
+        .select(
+          `
+            full_name,
+            preferred_subject,
+            learner_level
+          `
+        )
+        .eq(
+          "id",
+          userId
+        )
+        .maybeSingle(),
+
+      supabase
+        .from(
+          "enrollments"
+        )
+        .select(
+          `
+            course_slug,
+            enrolled_at,
+            last_opened_at
+          `
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .order(
+          "enrolled_at",
+          {
+            ascending:
+              false,
+          }
+        ),
+
+      supabase
+        .from(
+          "lesson_progress"
+        )
+        .select(
+          `
+            course_slug,
+            lesson_key,
+            completed
+          `
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "completed",
+          true
+        ),
+
+      supabase
+        .from(
+          "assessment_attempts"
+        )
+        .select(
+          `
+            course_slug,
+            assessment_key,
+            passed,
+            percentage
+          `
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "passed",
+          true
+        ),
+
+      supabase
+        .from(
+          "certificates"
+        )
+        .select(
+          `
+            course_slug,
+            certificate_code,
+            learner_name,
+            course_title,
+            completed_at,
+            final_assessment_percentage,
+            issued_at,
+            revoked_at
+          `
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .is(
+          "revoked_at",
+          null
+        )
+        .order(
+          "issued_at",
+          {
+            ascending:
+              false,
+          }
+        ),
+    ]);
+
+
+  const profile =
+    profileResult
+      .data;
+
+
+  const enrolments =
+    enrolmentsResult
+      .data ??
+    [];
+
+
+  const progress =
+    progressResult
+      .data ??
+    [];
+
+
+  const attempts =
+    attemptsResult
+      .data ??
+    [];
+
+
+  const certificates =
+    certificatesResult
+      .data ??
+    [];
+
+
+  const learnerName =
+    profile
+      ?.full_name
+      ?.trim() ||
+    email.split(
+      "@"
+    )[0] ||
+    "Learner";
+
+
+  const completedLessons =
+    progress.length;
+
+
+  const enrolledCourses =
+    enrolments.map(
+      (
+        enrolment
+      ) => {
+
+        const course =
+          getCourse(
+            enrolment
+              .course_slug
+          );
+
+
+        const completedKeys =
+          progress
+            .filter(
+              (item) =>
+                item.course_slug ===
+                enrolment.course_slug
+            )
+            .map(
+              (item) =>
+                item.lesson_key
+            );
+
+
+        const passedKeys =
+          attempts
+            .filter(
+              (item) =>
+                item.course_slug ===
+                enrolment.course_slug
+            )
+            .map(
+              (item) =>
+                item.assessment_key
+            );
+
+
+        const summary =
+          buildCourseProgress(
+            enrolment
+              .course_slug,
+            completedKeys,
+            passedKeys
+          );
+
+
+        return {
+          slug:
+            enrolment
+              .course_slug,
+
+          title:
+            course?.title ??
+            enrolment
+              .course_slug,
+
+          summary,
+
+          enrolledAt:
+            formatDate(
+              enrolment
+                .enrolled_at
+            ),
+
+          lastOpenedAt:
+            formatDate(
+              enrolment
+                .last_opened_at
+            ),
+        };
+      }
+    );
+
+
+  const completedCourses =
+    enrolledCourses
+      .filter(
+        (course) =>
+          course.summary
+            .courseComplete
+      )
+      .length;
+
+
+  return (
+    <main className="dashboard-live">
+
+      <section className="dashboard-live-hero">
+
+        <div className="shell">
+
+          <div className="dashboard-live-top">
+
+            <div>
+
+              <span className="eyebrow">
+                Learner dashboard
+              </span>
+
+              <h1>
+                Welcome back,
+                <br />
+                {learnerName}.
+              </h1>
+
+              <p>
+                Continue from your next
+                required lesson, track
+                assessments and keep
+                your completed
+                certificates in one
+                place.
+              </p>
+
+            </div>
+
+
+            <div className="dashboard-hero-actions">
+
+              <Link
+                href="/account"
+                className="button button-white"
+              >
+                Account
+              </Link>
+
+
+              <form
+                action="/auth/signout"
+                method="post"
+              >
+                <button
+                  type="submit"
+                  className="dashboard-signout"
+                >
+                  Sign out
+                </button>
+              </form>
+
+            </div>
+
+          </div>
+
+
+          <div className="dashboard-identity">
+
+            <span>
+              Signed in as
+            </span>
+
+            <strong>
+              {email}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <section className="dashboard-live-content">
+
+        <div className="shell">
+
+          <div className="dashboard-stat-grid">
+
+            <article className="dashboard-stat">
+
+              <span>
+                Enrolled courses
+              </span>
+
+              <strong>
+                {enrolledCourses.length}
+              </strong>
+
+              <p>
+                Courses currently in
+                your learning library.
+              </p>
+
+            </article>
+
+
+            <article className="dashboard-stat">
+
+              <span>
+                Lessons completed
+              </span>
+
+              <strong>
+                {completedLessons}
+              </strong>
+
+              <p>
+                Completed lessons across
+                your enrolled courses.
+              </p>
+
+            </article>
+
+
+            <article className="dashboard-stat">
+
+              <span>
+                Courses completed
+              </span>
+
+              <strong>
+                {completedCourses}
+              </strong>
+
+              <p>
+                Courses where every
+                required component has
+                been passed.
+              </p>
+
+            </article>
+
+
+            <article className="dashboard-stat">
+
+              <span>
+                Certificates
+              </span>
+
+              <strong>
+                {certificates.length}
+              </strong>
+
+              <p>
+                Issued certificates
+                available in your
+                learner account.
+              </p>
+
+            </article>
+
+          </div>
+
+
+          <div className="dashboard-profile-strip">
+
+            <div>
+              <span>
+                Learning level
+              </span>
+
+              <strong>
+                {profile
+                  ?.learner_level ||
+                  "Not set"}
+              </strong>
+            </div>
+
+
+            <div>
+              <span>
+                Preferred subject
+              </span>
+
+              <strong>
+                {profile
+                  ?.preferred_subject ||
+                  "Not set"}
+              </strong>
+            </div>
+
+
+            <Link
+              href="/account"
+            >
+              Edit profile →
+            </Link>
+
+          </div>
+
+
+          <div className="dashboard-section-heading">
+
+            <div>
+
+              <span className="eyebrow">
+                My learning
+              </span>
+
+              <h2>
+                Your courses
+              </h2>
+
+            </div>
+
+
+            <Link
+              href="/courses"
+              className="button"
+            >
+              Browse courses
+            </Link>
+
+          </div>
+
+
+          {enrolledCourses.length >
+          0 ? (
+
+            <div className="dashboard-course-list">
+
+              {enrolledCourses.map(
+                (
+                  course
+                ) => (
+
+                  <article
+                    key={
+                      course.slug
+                    }
+                    className="dashboard-course dashboard-course-expanded"
+                  >
+
+                    <div className="dashboard-course-main">
+
+                      <div className="dashboard-course-title-row">
+
+                        <div>
+
+                          <span className="dashboard-course-label">
+                            Enrolled course
+                          </span>
+
+                          <h3>
+                            {course.title}
+                          </h3>
+
+                        </div>
+
+
+                        <span
+                          className={[
+                            "dashboard-course-status",
+
+                            course.summary
+                              .courseComplete
+                              ? "complete"
+                              : "in-progress",
+                          ].join(
+                            " "
+                          )}
+                        >
+                          {course.summary
+                            .courseComplete
+                            ? "Complete"
+                            : "In progress"}
+                        </span>
+
+                      </div>
+
+
+                      <div className="dashboard-course-requirements">
+
+                        <article>
+
+                          <span>
+                            Lessons
+                          </span>
+
+                          <strong>
+                            {course.summary
+                              .completedLessons}
+                            /
+                            {course.summary
+                              .totalLessons}
+                          </strong>
+
+                        </article>
+
+
+                        <article>
+
+                          <span>
+                            Module checkpoints
+                          </span>
+
+                          <strong>
+                            {course.summary
+                              .totalCheckpoints >
+                            0
+                              ? `${course.summary.passedCheckpoints}/${course.summary.totalCheckpoints}`
+
+================ COURSE DEFINITIONS ================
+import type {
+  CourseEngineDefinition,
+} from "@/lib/course-engine/types";
+
+import {
+  buildCourseLessonKey,
+} from "@/lib/course-engine/legacy-adapter";
+
+
+function lesson(
+  moduleNumber: number,
+  lessonNumber: number,
+  moduleKey: string,
+  title: string,
+  estimatedMinutes = 18
+) {
+  const key =
+    buildCourseLessonKey(
+      moduleNumber,
+      lessonNumber,
+      moduleKey
+    );
+
+
+  return {
+    key,
+    title,
+    contentKey:
+      key,
+    estimatedMinutes,
+  };
+}
+
+
+export const statisticsFoundationsCourse:
+  CourseEngineDefinition = {
+
+  slug:
+    "statistics-foundations",
+
+  version:
+    1,
+
+  title:
+    "Statistics Foundations",
+
+  subject:
+    "statistics",
+
+  level:
+    "high-school",
+
+  status:
+    "published",
+
+  modules: [
+
+    {
+      key:
+        "thinking-with-data",
+
+      title:
+        "Thinking with data",
+
+      checkpointKey:
+        "module-01-checkpoint",
+
+      lessons: [
+        lesson(
+          1,
+          1,
+          "thinking-with-data",
+          "What does it mean to think with data?"
+        ),
+
+        lesson(
+          1,
+          2,
+          "thinking-with-data",
+          "Types of data and variables"
+        ),
+
+        lesson(
+          1,
+          3,
+          "thinking-with-data",
+          "Populations, samples and studies"
+        ),
+
+        lesson(
+          1,
+          4,
+          "thinking-with-data",
+          "From questions to evidence"
+        ),
+      ],
+    },
+
+
+    {
+import type {
+  CourseEngineDefinition,
+} from "@/lib/course-engine/types";
+
+import {
+  buildCourseLessonKey,
+} from "@/lib/course-engine/legacy-adapter";
+
+
+function lesson(
+  moduleNumber: number,
+  lessonNumber: number,
+  moduleKey: string,
+  title: string,
+  estimatedMinutes = 20,
+  labKey?: string
+) {
+  const key =
+    buildCourseLessonKey(
+      moduleNumber,
+      lessonNumber,
+      moduleKey
+    );
+
+
+  return {
+    key,
+    title,
+    contentKey:
+      key,
+    estimatedMinutes,
+    labKey,
+  };
+}
+
+
+export const calculusFoundationsCourse:
+  CourseEngineDefinition = {
+
+  slug:
+    "calculus-foundations",
+
+  version:
+    1,
+
+  title:
+    "Calculus Foundations",
+
+  subject:
+    "mathematics",
+
+  level:
+    "high-school",
+
+  status:
+    "published",
+
+  modules: [
+
+    {
+      key:
+        "functions-and-change",
+
+      title:
+        "Functions and change",
+
+      checkpointKey:
+        "module-01-checkpoint",
+
+      lessons: [
+
+        lesson(
+          1,
+          1,
+          "functions-and-change",
+          "Functions as relationships",
+          18
+        ),
+
+        lesson(
+          1,
+          2,
+          "functions-and-change",
+          "Reading and interpreting graphs",
+          20
+        ),
+
+        lesson(
+          1,
+          3,
+          "functions-and-change",
+          "Average rate of change",
+          22,
+          "secant-slope-explorer"
+        ),
+
+        lesson(
+          1,
+          4,
+          "functions-and-change",
+import type {
+  CourseEngineDefinition,
+} from "../types";
+
+
+export const pythonForDataAnalysisCourse:
+  CourseEngineDefinition = {
+
+  slug:
+    "python-for-data-analysis",
+
+  version:
+    1,
+
+  title:
+    "Python for Data Analysis",
+
+  subject:
+    "data-science",
+
+  level:
+    "undergraduate",
+
+  status:
+    "draft",
+
+  modules: [
+
+    {
+      key: "module-01",
+      title: "Python foundations for analysis",
+      checkpointKey: "module-01-checkpoint",
+
+      lessons: [
+        {
+          key: "m1-l1-python-foundations",
+          title: "The data-analysis workflow in Python",
+          contentKey: "m1-l1-python-foundations",
+          estimatedMinutes: 30,
+          labKey: "workflow",
+        },
+        {
+          key: "m1-l2-python-foundations",
+          title: "Variables, types and collections",
+          contentKey: "m1-l2-python-foundations",
+          estimatedMinutes: 32,
+        },
+        {
+          key: "m1-l3-python-foundations",
+          title: "Control flow and functions",
+          contentKey: "m1-l3-python-foundations",
+          estimatedMinutes: 34,
+        },
+        {
+          key: "m1-l4-python-foundations",
+          title: "Writing analysis-ready Python",
+          contentKey: "m1-l4-python-foundations",
+          estimatedMinutes: 32,
+        },
+      ],
+    },
+
+    {
+      key: "module-02",
+      title: "NumPy for numerical work",
+      checkpointKey: "module-02-checkpoint",
+
+      lessons: [
+        {
+          key: "m2-l1-numpy",
+          title: "Arrays and vectorisation",
+          contentKey: "m2-l1-numpy",
+          estimatedMinutes: 34,
+          labKey: "numpy",
+        },
+        {
+          key: "m2-l2-numpy",
+          title: "Indexing, masks and broadcasting",
+          contentKey: "m2-l2-numpy",
+          estimatedMinutes: 34,
+        },
+        {
+          key: "m2-l3-numpy",
+          title: "Numerical summaries and missing values",
+          contentKey: "m2-l3-numpy",
+          estimatedMinutes: 32,
+        },
+        {
+          key: "m2-l4-numpy",
+          title: "Randomness and simulation",
+          contentKey: "m2-l4-numpy",
+          estimatedMinutes: 34,
+        },
+      ],
+    },
+
+    {
+      key: "module-03",
+      title: "pandas foundations",
+      checkpointKey: "module-03-checkpoint",
