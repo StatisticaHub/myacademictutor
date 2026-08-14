@@ -21236,3 +21236,898 @@ td {
     font-size: 16px !important;
   }
 }
+
+
+/* ==========================================================================
+   PYTHON FOR DATA ANALYSIS — CODE + INTERACTIVE LABS
+   ========================================================================== */
+
+.lesson-code-example {
+  margin: 30px 0;
+  overflow: hidden;
+  border: 1px solid #d4cec4;
+  border-radius: 18px;
+  background: #111;
+}
+
+.lesson-code-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #2d2d2d;
+  background: #1b1b1b;
+}
+
+.lesson-code-header span {
+  padding: 4px 8px;
+  border: 1px solid #444;
+  border-radius: 999px;
+  color: #c9c4bc;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.lesson-code-header strong {
+  color: #f4f1ec;
+  font-size: 14px;
+}
+
+.lesson-code-example pre {
+  margin: 0;
+  padding: 22px;
+  overflow-x: auto;
+  background: #111;
+  color: #f3f0e9;
+  font-size: 15px;
+  line-height: 1.7;
+  tab-size: 4;
+}
+
+.lesson-code-example code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  white-space: pre;
+}
+
+.lesson-code-example > p {
+  margin: 0;
+  padding: 13px 16px 15px;
+  border-top: 1px solid #2d2d2d;
+  color: #c7c0b7;
+  font-size: 14px !important;
+  line-height: 1.6;
+}
+
+.python-data-lab {
+  margin: 34px 0;
+  padding: 28px;
+  border: 1px solid #d5cec3;
+  border-radius: 22px;
+  background: #f8f4ec;
+}
+
+.python-data-lab-heading {
+  max-width: 800px;
+}
+
+.python-data-lab-heading > span {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #625b53;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.python-data-lab-heading h3 {
+  margin: 0;
+  font: 700 clamp(26px, 3vw, 34px) / 1.12 Georgia, serif;
+}
+
+.python-data-lab-heading p {
+  margin: 10px 0 0;
+  color: #5d574f;
+  font-size: 16px !important;
+  line-height: 1.65;
+}
+
+.python-lab-content {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.python-step-grid,
+.python-check-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.python-step-grid button,
+.python-check-grid button,
+.python-pill-row button {
+  border: 1px solid #d6cfc4;
+  background: #fff;
+  color: #322e2a;
+  cursor: pointer;
+}
+
+.python-step-grid button,
+.python-check-grid button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.python-step-grid button.active,
+.python-check-grid button.complete,
+.python-pill-row button.active {
+  border-color: #1d1d1d;
+  background: #1d1d1d;
+  color: #fff;
+}
+
+.python-step-grid button span,
+.python-check-grid button span {
+  min-width: 26px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.python-lab-result {
+  padding: 17px 18px;
+  border-left: 4px solid #1d1d1d;
+  background: #ece5da;
+}
+
+.python-lab-result span {
+  display: block;
+  color: #6a635b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.python-lab-result strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.python-lab-result p {
+  margin: 6px 0 0;
+  color: #5f5850;
+  font-size: 14px !important;
+  line-height: 1.6;
+}
+
+.python-lab-controls {
+  display: grid;
+  gap: 12px;
+}
+
+.python-lab-controls label {
+  padding: 15px 16px;
+  border: 1px solid #d6cfc4;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.python-lab-controls label > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.python-lab-controls input[type="range"] {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.python-array-preview {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 5px;
+  max-width: 640px;
+}
+
+.python-array-preview span {
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  border: 1px solid #d9d2c7;
+  border-radius: 8px;
+  background: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.python-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.python-metric-grid article {
+  padding: 15px;
+  border: 1px solid #d7d0c5;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.python-metric-grid span {
+  display: block;
+  color: #6c655d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.python-metric-grid strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 18px;
+}
+
+.python-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #d7d0c5;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.python-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.python-mini-table th,
+.python-mini-table td {
+  padding: 11px 13px;
+  border-bottom: 1px solid #ece7df;
+  text-align: left;
+}
+
+.python-mini-table th {
+  background: #f0ebe3;
+  color: #4d4740;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.python-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.python-pill-row button {
+  padding: 9px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.python-select {
+  max-width: 440px;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid #d2cbc0;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 15px;
+}
+
+@media (max-width: 760px) {
+  .python-data-lab {
+    padding: 20px;
+  }
+
+  .python-step-grid,
+  .python-check-grid,
+  .python-metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .python-array-preview {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .lesson-code-example pre {
+    padding: 18px;
+    font-size: 13px;
+  }
+}
+
+
+/* ==========================================================================
+   PYTHON COURSE — CODE OUTPUT / NOTE REPAIR
+   ========================================================================== */
+
+.lesson-code-output {
+  border-top: 1px solid #2d2d2d;
+  background: #1b1b1b;
+}
+
+.lesson-code-output > span {
+  display: block;
+  padding: 12px 16px 0;
+  color: #bcb5ab;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.lesson-code-output pre {
+  margin: 0;
+  padding: 14px 16px 18px;
+  overflow-x: auto;
+  background: transparent;
+  color: #e5e0d8;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.lesson-code-note {
+  margin: 0 !important;
+  padding: 14px 16px 16px;
+  border-top: 1px solid #2d2d2d;
+  background: #222;
+  color: #d3cdc4 !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+}
+
+
+/* ==========================================================================
+   PYTHON LIVE LAB SYSTEM
+   ========================================================================== */
+
+.live-python-example {
+  margin: 34px 0;
+  border: 1px solid #2f2f2f;
+  border-radius: 20px;
+  background: #121212;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, .08);
+}
+
+.live-python-head {
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.live-python-head > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.live-python-badges,
+.python-package-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.live-python-badges span,
+.python-package-pills span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
+.live-python-badges span {
+  border: 1px solid #454545;
+  background: #252525;
+  color: #d8d2ca;
+}
+
+.live-python-badges span:first-child {
+  border-color: #76977e;
+  background: #203128;
+  color: #d7f1dc;
+}
+
+.live-python-editor {
+  display: block;
+  width: 100%;
+  min-height: 260px;
+  padding: 22px;
+  resize: vertical;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: #121212;
+  color: #f2eee8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 15px;
+  line-height: 1.72;
+  tab-size: 4;
+  white-space: pre;
+}
+
+.live-python-editor:focus {
+  box-shadow: inset 0 0 0 2px rgba(240, 235, 226, .15);
+}
+
+.live-python-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid #292929;
+  border-bottom: 1px solid #292929;
+  background: #191919;
+}
+
+.live-python-toolbar button,
+.live-python-reference button,
+.python-challenge-help button,
+.python-solution button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #454545;
+  border-radius: 9px;
+  background: #252525;
+  color: #eee9e2;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.live-python-toolbar button:hover,
+.live-python-reference button:hover,
+.python-challenge-help button:hover,
+.python-solution button:hover {
+  border-color: #696969;
+  background: #303030;
+}
+
+.live-python-toolbar button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+.live-python-toolbar .live-python-run {
+  border-color: #ece7df;
+  background: #f3efe8;
+  color: #181818;
+}
+
+.live-python-toolbar .live-python-check {
+  border-color: #789481;
+  background: #243229;
+  color: #e3f0e5;
+}
+
+.live-python-shortcut {
+  margin-left: auto;
+  color: #918a81;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.live-python-output {
+  min-height: 88px;
+  background: #0d0d0d;
+}
+
+.live-python-output-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #242424;
+  color: #a9a198;
+}
+
+.live-python-output-head span {
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.live-python-output-head small {
+  font-size: 10px;
+}
+
+.live-python-output > pre,
+.live-python-error {
+  margin: 0;
+  padding: 18px;
+  overflow-x: auto;
+  background: transparent;
+  color: #dfd9d0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.live-python-error {
+  color: #ffc8c8 !important;
+  background: #241414 !important;
+}
+
+.live-python-empty,
+.live-python-runtime-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 16px 18px;
+  color: #8e877f;
+  font-size: 13px;
+}
+
+.live-python-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid #4a4743;
+  border-top-color: #f1ece5;
+  border-radius: 50%;
+  animation: mat-python-spin .8s linear infinite;
+}
+
+@keyframes mat-python-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.live-python-figure {
+  padding: 18px;
+  border-top: 1px solid #242424;
+  background: #fff;
+  text-align: center;
+}
+
+.live-python-figure img {
+  width: auto;
+  max-width: 100%;
+  max-height: 560px;
+}
+
+.live-python-reference {
+  padding: 12px 15px;
+  border-top: 1px solid #2a2a2a;
+  background: #171717;
+}
+
+.live-python-reference > pre {
+  margin: 12px 0 0;
+  padding: 14px;
+  overflow-x: auto;
+  border: 1px solid #303030;
+  border-radius: 10px;
+  background: #0f0f0f;
+  color: #cfc8bf;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.live-python-caption,
+.live-python-example .lesson-code-note {
+  margin: 0 !important;
+  padding: 14px 16px 16px;
+  border-top: 1px solid #292929;
+  color: #c6bfb5 !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+}
+
+.live-python-example .lesson-code-note {
+  background: #202020;
+}
+
+.python-local-save {
+  padding: 9px 15px 11px;
+  border-top: 1px solid #292929;
+  color: #777169;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* --------------------------------------------------------------------------
+   Lesson challenge
+   -------------------------------------------------------------------------- */
+
+.python-lesson-challenge {
+  margin: 38px 0;
+  overflow: hidden;
+  border: 1px solid #d1cabf;
+  border-radius: 22px;
+  background: #f7f2e9;
+  box-shadow: 0 18px 46px rgba(42, 35, 27, .06);
+}
+
+.python-challenge-kicker {
+  padding: 15px 20px 0;
+  color: #665f57;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.python-challenge-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 10px 20px 20px;
+}
+
+.python-challenge-heading h4 {
+  margin: 0;
+  font: 700 clamp(24px, 3vw, 31px) / 1.15 Georgia, serif;
+  color: #27231f;
+}
+
+.python-challenge-heading p {
+  max-width: 760px;
+  margin: 9px 0 0;
+  color: #5f5952;
+  font-size: 15px !important;
+  line-height: 1.7;
+}
+
+.python-package-pills {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.python-package-pills span {
+  border: 1px solid #d4ccc0;
+  background: #fff;
+  color: #5e574f;
+}
+
+.python-challenge-editor {
+  min-height: 240px;
+  border-top: 1px solid #d2cbc0;
+  background: #151515;
+}
+
+.python-lesson-challenge .live-python-toolbar {
+  border-color: #313131;
+}
+
+.python-lesson-challenge .live-python-output {
+  border-bottom: 1px solid #d2cbc0;
+}
+
+.python-test-results {
+  padding: 18px 20px;
+  border-bottom: 1px solid #d8d1c6;
+  background: #fff;
+}
+
+.python-test-results.passed {
+  background: #f0f6f1;
+}
+
+.python-test-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.python-test-summary strong {
+  font-size: 15px;
+}
+
+.python-test-summary span {
+  color: #4d6653;
+  font-size: 13px;
+}
+
+.python-test-grid {
+  display: grid;
+  gap: 7px;
+}
+
+.python-test-grid > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #ddd6cb;
+  border-radius: 10px;
+}
+
+.python-test-grid > div span {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  font-weight: 900;
+}
+
+.python-test-grid > div p {
+  margin: 0;
+  font-size: 13px !important;
+}
+
+.python-test-grid > div.passed span {
+  background: #dfeee2;
+  color: #34543b;
+}
+
+.python-test-grid > div.failed span {
+  background: #f5dfdf;
+  color: #773838;
+}
+
+.python-challenge-help {
+  display: flex;
+  gap: 8px;
+  padding: 14px 20px;
+  background: #f7f2e9;
+}
+
+.python-challenge-help button,
+.python-solution button {
+  border-color: #cfc7bb;
+  background: #fff;
+  color: #49433d;
+}
+
+.python-hint {
+  padding: 16px 20px;
+  border-top: 1px solid #ddd5c9;
+  background: #f3ecdf;
+}
+
+.python-hint strong {
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.python-hint p {
+  margin: 5px 0 0;
+  color: #5c554d;
+  font-size: 14px !important;
+}
+
+.python-solution {
+  border-top: 1px solid #d9d1c5;
+  background: #fff;
+}
+
+.python-solution > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 13px 18px;
+}
+
+.python-solution > div strong {
+  font-size: 13px;
+}
+
+.python-solution pre {
+  margin: 0;
+  padding: 19px;
+  overflow-x: auto;
+  border-top: 1px solid #e4ded5;
+  background: #161616;
+  color: #f0ebe4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre;
+}
+
+.python-lesson-challenge > .python-local-save {
+  border-top: 1px solid #d8d1c6;
+  background: #f7f2e9;
+  color: #766f67;
+}
+
+
+@media (max-width: 760px) {
+  .live-python-head,
+  .python-challenge-heading,
+  .python-test-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .live-python-head > div:first-child {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .live-python-shortcut {
+    display: none;
+  }
+
+  .live-python-editor {
+    min-height: 230px;
+    padding: 17px;
+    font-size: 13px;
+  }
+
+  .python-challenge-heading {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .python-challenge-kicker,
+  .python-challenge-help {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .python-package-pills {
+    justify-content: flex-start;
+  }
+}
+
+/* PYTHON CLEAN REBUILD — FRIENDLY ERRORS */
+.live-python-friendly-error {
+  padding: 16px 18px;
+  border-top: 1px solid #3b2525;
+  background: #241616;
+  color: #ffd9d9;
+}
+
+.live-python-friendly-error strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.live-python-friendly-error pre {
+  margin: 0;
+  overflow-x: auto;
+  color: #ffd9d9;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.python-test-grid > div small {
+  display: block;
+  margin-top: 4px;
+  color: #7a5a5a;
+  font-size: 11px;
+  line-height: 1.45;
+}

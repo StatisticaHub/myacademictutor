@@ -2312,6 +2312,37 @@ export const courses: Course[] = [
       "Portfolio website",
     ],
   },
+
+  {
+    slug: "python-for-data-analysis",
+    title: "Python for Data Analysis",
+    subject: "data-science",
+    level: "undergraduate",
+    duration: "8 weeks",
+    lessons: 32,
+    description:
+      "Build a rigorous, reproducible Python data-analysis workflow with NumPy, pandas, cleaning, joins, visualisation, statistical analysis and a complete capstone project.",
+    skills: [
+      "Python",
+      "NumPy",
+      "pandas",
+      "Data cleaning",
+      "Data visualisation",
+      "Statistical analysis",
+      "Reproducible workflows",
+    ],
+    modules: [
+      "Python foundations for analysis",
+      "NumPy for numerical work",
+      "pandas foundations",
+      "Cleaning and reshaping data",
+      "Grouping and combining data",
+      "Exploratory analysis and visualisation",
+      "Time series and reproducible workflows",
+      "Capstone: from raw data to decision-ready analysis",
+    ],
+    featured: true,
+  },
 ];
 
 

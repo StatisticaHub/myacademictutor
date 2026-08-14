@@ -16,6 +16,10 @@ import {
 } from "./calculus-foundations";
 
 
+import {
+  pythonForDataAnalysisAssessments,
+} from "./python-for-data-analysis";
+
 export * from "./types";
 
 
@@ -26,6 +30,8 @@ export const assessments:
 
   ...calculusFoundationsAssessments,
 
+
+  ...pythonForDataAnalysisAssessments,
 ];
 
 

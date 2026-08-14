@@ -111,6 +111,23 @@ export type LessonFTCConnectionExplorer = {
   description: string;
 };
 
+export type LessonCodeExample = {
+  type: "code-example";
+  title: string;
+  code: string;
+  language?: string;
+  caption?: string;
+  output?: string;
+  note?: string;
+};
+
+export type LessonPythonDataLab = {
+  type: "python-data-lab";
+  labKey: string;
+  title: string;
+  description: string;
+};
+
 export type LessonBlock =
   | LessonParagraph
   | LessonHeading
@@ -129,7 +146,9 @@ export type LessonBlock =
   | LessonChainRuleBuilder
   | LessonCurveBehaviourExplorer
   | LessonRiemannSumExplorer
-  | LessonFTCConnectionExplorer;
+  | LessonFTCConnectionExplorer
+  | LessonCodeExample
+  | LessonPythonDataLab;
 
 
 /* ==========================================================================

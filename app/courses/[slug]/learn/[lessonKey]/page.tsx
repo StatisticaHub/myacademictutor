@@ -9,6 +9,8 @@ import {
   redirect,
 } from "next/navigation";
 import DistributionExplorer from "@/components/labs/DistributionExplorer";
+import PythonDataLab from "@/components/labs/PythonDataLab";
+import RunnablePythonExample from "@/components/python/RunnablePythonExample";
 import LessonQuiz from "@/components/LessonQuiz";
 import ProbabilitySimulator from "@/components/labs/ProbabilitySimulator";
 import DistributionModelExplorer from "@/components/labs/DistributionModelExplorer";
@@ -175,7 +177,45 @@ case "secant-slope-explorer":
   );
 
 
+case "code-example":
+  return (
+    <RunnablePythonExample
+      title={block.title}
+      code={block.code}
+      language={block.language}
+      expectedOutput={block.output}
+      note={block.note}
+      caption={block.caption}
+    />
+  );
+
+case "python-data-lab":
+
+
+  return (
+
+
+    <PythonDataLab
+
+
+      labKey={block.labKey}
+
+
+      title={block.title}
+
+
+      description={block.description}
+
+
+    />
+
+
+  );
+
+
+
 default:
+
 
   return null;
   }

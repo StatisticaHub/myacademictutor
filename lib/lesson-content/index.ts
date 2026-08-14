@@ -63,6 +63,38 @@ import {
   calculusFoundationsModule07,
 } from "./calculus-foundations/module-07";
 
+import {
+  pythonDataAnalysisModule01,
+} from "./python-for-data-analysis/module-01";
+
+import {
+  pythonDataAnalysisModule02,
+} from "./python-for-data-analysis/module-02";
+
+import {
+  pythonDataAnalysisModule03,
+} from "./python-for-data-analysis/module-03";
+
+import {
+  pythonDataAnalysisModule04,
+} from "./python-for-data-analysis/module-04";
+
+import {
+  pythonDataAnalysisModule05,
+} from "./python-for-data-analysis/module-05";
+
+import {
+  pythonDataAnalysisModule06,
+} from "./python-for-data-analysis/module-06";
+
+import {
+  pythonDataAnalysisModule07,
+} from "./python-for-data-analysis/module-07";
+
+import {
+  pythonDataAnalysisModule08,
+} from "./python-for-data-analysis/module-08";
+
 /* ==========================================================================
    EXPORT TYPES
    ========================================================================== */
@@ -104,6 +136,22 @@ export const authoredLessons:
   ...calculusFoundationsModule06,
 
   ...calculusFoundationsModule07,
+
+  ...pythonDataAnalysisModule01,
+
+  ...pythonDataAnalysisModule02,
+
+  ...pythonDataAnalysisModule03,
+
+  ...pythonDataAnalysisModule04,
+
+  ...pythonDataAnalysisModule05,
+
+  ...pythonDataAnalysisModule06,
+
+  ...pythonDataAnalysisModule07,
+
+  ...pythonDataAnalysisModule08,
 ];
 
 

@@ -3,6 +3,10 @@ import {
 } from "@/lib/course-engine/courses/calculus-foundations";
 
 import {
+  pythonForDataAnalysisCourse,
+} from "@/lib/course-engine/courses/python-for-data-analysis";
+
+import {
   statisticsFoundationsCourse,
 } from "@/lib/course-engine/courses/statistics-foundations";
 
@@ -17,4 +21,13 @@ export const registeredCourseDefinitions:
   statisticsFoundationsCourse,
 
   calculusFoundationsCourse,
+
+  pythonForDataAnalysisCourse,
 ];
+
+
+export {
+  statisticsFoundationsCourse,
+  calculusFoundationsCourse,
+  pythonForDataAnalysisCourse,
+};
