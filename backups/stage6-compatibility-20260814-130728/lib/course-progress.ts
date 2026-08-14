@@ -32,12 +32,6 @@ export type CourseProgressSummary = {
   totalCheckpoints: number;
   passedCheckpoints: number;
 
-  /*
-   * Backwards-compatible boolean used by existing course UI.
-   */
-  finalAssessmentExists:
-    boolean;
-
   finalAssessmentStatus:
     FinalAssessmentStatus;
 
@@ -256,12 +250,6 @@ export function buildCourseProgress(
       .finalAssessmentKey;
 
 
-  const finalAssessmentExists =
-    Boolean(
-      finalKey
-    );
-
-
   const finalRequired =
     Boolean(
       definition
@@ -416,6 +404,10 @@ export function buildCourseProgress(
     "View course";
 
 
+  /*
+   * The progression order is defined by the course engine:
+   * module lessons → module checkpoint → next module → final → completion.
+   */
   outer:
   for (
     const module
@@ -510,8 +502,6 @@ export function buildCourseProgress(
       checkpointKeys.length,
 
     passedCheckpoints,
-
-    finalAssessmentExists,
 
     finalAssessmentStatus,
 

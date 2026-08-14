@@ -2,365 +2,610 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-import Icon from "./Icon";
-import { levels, subjects } from "@/lib/data";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  createClient,
+} from "@/lib/supabase/client";
+
+import {
+  subjects,
+} from "@/lib/data";
+
+
+type AuthState =
+  | "loading"
+  | "signed-out"
+  | "signed-in";
+
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [subjectsOpen, setSubjectsOpen] = useState(false);
 
-  /* ------------------------------------------------------------------------
-     Close menus with Escape
-     ------------------------------------------------------------------------ */
+  const supabase =
+    useMemo(
+      () =>
+        createClient(),
+      []
+    );
 
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setMobileMenuOpen(false);
-        setSubjectsOpen(false);
-      }
-    }
 
-    document.addEventListener("keydown", handleKeyDown);
+  const [
+    authState,
+    setAuthState,
+  ] =
+    useState<AuthState>(
+      "loading"
+    );
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
 
-  /* ------------------------------------------------------------------------
-     Prevent background scrolling while mobile menu is open
-     ------------------------------------------------------------------------ */
+  const [
+    mobileOpen,
+    setMobileOpen,
+  ] =
+    useState(false);
 
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
 
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
+  const [
+    subjectsOpen,
+    setSubjectsOpen,
+  ] =
+    useState(false);
 
-  function closeMobileMenu() {
-    setMobileMenuOpen(false);
+
+  useEffect(
+    () => {
+
+      let active =
+        true;
+
+
+      supabase
+        .auth
+        .getSession()
+        .then(
+          ({
+            data,
+          }) => {
+
+            if (!active) {
+              return;
+            }
+
+
+            setAuthState(
+              data.session
+                ? "signed-in"
+                : "signed-out"
+            );
+          }
+        );
+
+
+      const {
+        data:
+          authListener,
+      } =
+        supabase
+          .auth
+          .onAuthStateChange(
+            (
+              _event,
+              session
+            ) => {
+
+              setAuthState(
+                session
+                  ? "signed-in"
+                  : "signed-out"
+              );
+            }
+          );
+
+
+      return () => {
+        active =
+          false;
+
+        authListener
+          .subscription
+          .unsubscribe();
+      };
+    },
+    [
+      supabase,
+    ]
+  );
+
+
+  function closeMenus() {
+    setMobileOpen(
+      false
+    );
+
+    setSubjectsOpen(
+      false
+    );
   }
+
+
+  const signedIn =
+    authState ===
+    "signed-in";
+
 
   return (
     <>
       <header className="site-header">
+
         <div className="shell header-inner">
-          {/* ----------------------------------------------------------------
-              Brand
-             ---------------------------------------------------------------- */}
 
           <Link
             href="/"
             className="brand"
-            aria-label="My Academic Tutor home"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              setSubjectsOpen(false);
-            }}
+            aria-label="My Academic Tutor homepage"
+            onClick={
+              closeMenus
+            }
           >
             <Image
               src="/logo.png"
-              alt="My Academic Tutor"
-              width={52}
-              height={52}
-              priority
+              alt=""
+              width={
+                44
+              }
+              height={
+                44
+              }
               className="brand-logo"
+              priority
             />
 
             <span className="brand-wordmark">
-              <b>My Academic</b>
-              <span>Tutor</span>
+              <b>
+                My Academic Tutor
+              </b>
+
+              <span>
+                Learn with direction
+              </span>
             </span>
           </Link>
 
-          {/* ----------------------------------------------------------------
-              Desktop navigation
-             ---------------------------------------------------------------- */}
 
-          <nav className="desktop-nav" aria-label="Main navigation">
-            {/* Subjects mega menu */}
+          <nav
+            className="desktop-nav"
+            aria-label="Main navigation"
+          >
 
-            <div
-              className="nav-drop"
-              onMouseEnter={() => setSubjectsOpen(true)}
-              onMouseLeave={() => setSubjectsOpen(false)}
-            >
+            <div className="nav-drop">
+
               <button
                 type="button"
-                aria-haspopup="true"
-                aria-expanded={subjectsOpen}
-                onClick={() => setSubjectsOpen((current) => !current)}
+                aria-expanded={
+                  subjectsOpen
+                }
+                onClick={() =>
+                  setSubjectsOpen(
+                    (
+                      current
+                    ) =>
+                      !current
+                  )
+                }
               >
-                Subjects <span aria-hidden="true">⌄</span>
+                Subjects
               </button>
+
 
               {subjectsOpen && (
                 <div className="mega-menu">
-                  {/* Intro block */}
 
                   <div className="mega-intro">
+
                     <span className="eyebrow light">
-                      Explore by subject
+                      Five academic pillars
                     </span>
 
                     <h3>
-                      Five disciplines.
-                      <br />
-                      One learning ecosystem.
+                      Learn the subjects
+                      that power modern
+                      quantitative work.
                     </h3>
 
                     <p>
-                      Build strong foundations, master university modules,
-                      develop practical skills and progress towards advanced
-                      study.
+                      Build strong
+                      foundations and
+                      progress into
+                      applied,
+                      computational and
+                      research-level
+                      learning.
                     </p>
 
                     <Link
                       href="/subjects"
-                      className="button button-white button-small"
-                      onClick={() => setSubjectsOpen(false)}
+                      className="button button-white"
+                      onClick={
+                        closeMenus
+                      }
                     >
                       Explore all subjects
-                      <Icon name="arrow" size={15} />
                     </Link>
+
                   </div>
 
-                  {/* Subject links */}
 
                   <div className="mega-subjects">
-                    {subjects.map((subject) => (
-                      <Link
-                        href={`/subjects/${subject.slug}`}
-                        key={subject.slug}
-                        className={`mega-subject ${subject.accent}`}
-                        onClick={() => setSubjectsOpen(false)}
-                      >
-                        <span className="subject-symbol">
-                          {subject.symbol}
-                        </span>
 
-                        <span>
-                          <b>{subject.name}</b>
-                          <small>{subject.short}</small>
-                        </span>
+                    {subjects.map(
+                      (
+                        subject
+                      ) => (
 
-                        <Icon name="chevron" size={17} />
-                      </Link>
-                    ))}
+                        <Link
+                          key={
+                            subject.slug
+                          }
+                          href={`/subjects/${subject.slug}`}
+                          className={`mega-subject ${subject.accent}`}
+                          onClick={
+                            closeMenus
+                          }
+                        >
+
+                          <span className="subject-symbol">
+                            {subject.symbol}
+                          </span>
+
+
+                          <span>
+                            <b>
+                              {subject.name}
+                            </b>
+
+                            <small>
+                              {subject.short}
+                            </small>
+                          </span>
+
+
+                          <span
+                            aria-hidden="true"
+                          >
+                            →
+                          </span>
+
+                        </Link>
+
+                      )
+                    )}
+
                   </div>
+
                 </div>
               )}
+
             </div>
 
-            <Link href="/learning">
-              Learning Paths
-            </Link>
-
-            <Link href="/courses">
-              Courses
-            </Link>
-
-            <Link href="/labs">
-              Interactive Labs
-            </Link>
-
-            <Link href="/tutoring">
-              Tutoring
-            </Link>
-
-            <Link href="/resources">
-              Resources
-            </Link>
-          </nav>
-
-          {/* ----------------------------------------------------------------
-              Header actions
-             ---------------------------------------------------------------- */}
-
-          <div className="header-actions">
-            <Link
-              href="/search"
-              className="icon-button"
-              aria-label="Search My Academic Tutor"
-            >
-              <Icon name="search" size={18} />
-            </Link>
-
-            <Link
-              href="/dashboard"
-              className="signin-link"
-            >
-              Sign in
-            </Link>
 
             <Link
               href="/learning"
-              className="button button-small"
+              onClick={
+                closeMenus
+              }
             >
-              Start learning
+              Learning
             </Link>
+
+
+            <Link
+              href="/pathways"
+              onClick={
+                closeMenus
+              }
+            >
+              Pathways
+            </Link>
+
+
+            <Link
+              href="/labs"
+              onClick={
+                closeMenus
+              }
+            >
+              Labs
+            </Link>
+
+
+            <Link
+              href="/tutoring"
+              onClick={
+                closeMenus
+              }
+            >
+              Tutoring
+            </Link>
+
+          </nav>
+
+
+          <div className="header-actions">
+
+            <Link
+              href="/search"
+              className="icon-button"
+              aria-label="Search"
+              onClick={
+                closeMenus
+              }
+            >
+              ⌕
+            </Link>
+
+
+            {authState ===
+            "loading" ? (
+
+              <span
+                className="header-auth-placeholder"
+                aria-hidden="true"
+              />
+
+            ) : signedIn ? (
+
+              <>
+                <Link
+                  href="/dashboard"
+                  className="signin-link"
+                  onClick={
+                    closeMenus
+                  }
+                >
+                  Dashboard
+                </Link>
+
+
+                <Link
+                  href="/account"
+                  className="button button-small"
+                  onClick={
+                    closeMenus
+                  }
+                >
+                  Account
+                </Link>
+              </>
+
+            ) : (
+
+              <>
+                <Link
+                  href="/login"
+                  className="signin-link"
+                  onClick={
+                    closeMenus
+                  }
+                >
+                  Sign In
+                </Link>
+
+
+                <Link
+                  href="/courses"
+                  className="button button-small"
+                  onClick={
+                    closeMenus
+                  }
+                >
+                  Start learning
+                </Link>
+              </>
+
+            )}
+
 
             <button
               type="button"
-              className="mobile-menu-button"
+              className="mobile-menu-button icon-button"
               aria-label={
-                mobileMenuOpen
-                  ? "Close navigation menu"
-                  : "Open navigation menu"
+                mobileOpen
+                  ? "Close menu"
+                  : "Open menu"
               }
-              aria-expanded={mobileMenuOpen}
+              aria-expanded={
+                mobileOpen
+              }
               onClick={() =>
-                setMobileMenuOpen((current) => !current)
+                setMobileOpen(
+                  (
+                    current
+                  ) =>
+                    !current
+                )
               }
             >
-              <Icon
-                name={mobileMenuOpen ? "close" : "menu"}
-                size={24}
-              />
+              {mobileOpen
+                ? "×"
+                : "☰"}
             </button>
+
           </div>
+
         </div>
+
       </header>
 
-      {/* ====================================================================
-          Mobile navigation
-         ==================================================================== */}
 
-      {mobileMenuOpen && (
+      {mobileOpen && (
         <div className="mobile-panel">
+
           <div className="shell mobile-panel-inner">
-            {/* Subjects */}
 
             <div className="mobile-panel-group">
-              <span>Subjects</span>
-
-              {subjects.map((subject) => (
-                <Link
-                  key={subject.slug}
-                  href={`/subjects/${subject.slug}`}
-                  onClick={closeMobileMenu}
-                >
-                  {subject.name}
-                </Link>
-              ))}
+              <span>
+                Learn
+              </span>
 
               <Link
                 href="/subjects"
-                onClick={closeMobileMenu}
+                onClick={
+                  closeMenus
+                }
               >
-                View all subjects →
+                Subjects
               </Link>
-            </div>
-
-            {/* Learning */}
-
-            <div className="mobile-panel-group">
-              <span>Learning</span>
-
-              {levels.map((level) => (
-                <Link
-                  key={level.slug}
-                  href={`/learning?level=${level.slug}`}
-                  onClick={closeMobileMenu}
-                >
-                  {level.name}
-                </Link>
-              ))}
 
               <Link
                 href="/courses"
-                onClick={closeMobileMenu}
+                onClick={
+                  closeMenus
+                }
               >
-                All courses
+                Courses
+              </Link>
+
+              <Link
+                href="/learning"
+                onClick={
+                  closeMenus
+                }
+              >
+                Learning
               </Link>
 
               <Link
                 href="/pathways"
-                onClick={closeMobileMenu}
+                onClick={
+                  closeMenus
+                }
               >
-                Career pathways
+                Pathways
               </Link>
-            </div>
-
-            {/* More */}
-
-            <div className="mobile-panel-group">
-              <span>Explore</span>
 
               <Link
                 href="/labs"
-                onClick={closeMobileMenu}
+                onClick={
+                  closeMenus
+                }
               >
-                Interactive Labs
+                Interactive labs
               </Link>
+            </div>
+
+
+            <div className="mobile-panel-group">
+              <span>
+                Support
+              </span>
 
               <Link
                 href="/tutoring"
-                onClick={closeMobileMenu}
+                onClick={
+                  closeMenus
+                }
               >
                 Tutoring
               </Link>
 
               <Link
                 href="/resources"
-                onClick={closeMobileMenu}
+                onClick={
+                  closeMenus
+                }
               >
                 Resources
               </Link>
 
               <Link
-                href="/countries"
-                onClick={closeMobileMenu}
-              >
-                Global curricula
-              </Link>
-
-              <Link
                 href="/about"
-                onClick={closeMobileMenu}
+                onClick={
+                  closeMenus
+                }
               >
                 About
               </Link>
+
+              <Link
+                href="/contact"
+                onClick={
+                  closeMenus
+                }
+              >
+                Contact
+              </Link>
             </div>
 
-            {/* Account */}
 
             <div className="mobile-panel-group">
-              <span>Account</span>
+              <span>
+                {signedIn
+                  ? "Your account"
+                  : "Learner account"}
+              </span>
 
-              <Link
-                href="/login"
-                onClick={closeMobileMenu}
-              >
-                Sign in
-              </Link>
+              {signedIn ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    onClick={
+                      closeMenus
+                    }
+                  >
+                    Dashboard
+                  </Link>
 
-              <Link
-                href="/search"
-                onClick={closeMobileMenu}
-              >
-                Search
-              </Link>
+                  <Link
+                    href="/account"
+                    onClick={
+                      closeMenus
+                    }
+                  >
+                    Account & profile
+                  </Link>
 
-              <Link
-                href="/learning"
-                className="button"
-                onClick={closeMobileMenu}
-              >
-                Start learning
-                <Icon name="arrow" size={15} />
-              </Link>
+                  <form
+                    action="/auth/signout"
+                    method="post"
+                  >
+                    <button
+                      type="submit"
+                      className="mobile-signout-link"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={
+                      closeMenus
+                    }
+                  >
+                    Sign In
+                  </Link>
+
+                  <Link
+                    href="/courses"
+                    onClick={
+                      closeMenus
+                    }
+                  >
+                    Start learning
+                  </Link>
+                </>
+              )}
             </div>
+
           </div>
+
         </div>
       )}
     </>

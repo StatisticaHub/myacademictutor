@@ -1,18 +1,6 @@
-import type {
-  Course,
-} from "@/lib/data";
-
 import {
   getCourseDefinition,
 } from "@/lib/course-engine";
-
-
-type CourseReference =
-  | string
-  | Pick<
-      Course,
-      "slug"
-    >;
 
 
 export type CourseLesson = {
@@ -32,12 +20,6 @@ export type CourseLesson = {
 
   globalIndex: number;
   globalNumber: number;
-
-  /*
-   * Backwards-compatible alias used by the existing lesson page.
-   * This is the course-wide lesson number (1, 2, 3, ...).
-   */
-  number: number;
 
   contentKey?: string;
   estimatedMinutes?: number;
@@ -61,27 +43,10 @@ export type CourseModule = {
 };
 
 
-function resolveCourseSlug(
-  course:
-    CourseReference
-) {
-  return typeof course ===
-    "string"
-    ? course
-    : course.slug;
-}
-
-
 function buildCourseStructure(
-  course:
-    CourseReference
+  courseSlug:
+    string
 ) {
-
-  const courseSlug =
-    resolveCourseSlug(
-      course
-    );
-
 
   const definition =
     getCourseDefinition(
@@ -136,11 +101,6 @@ function buildCourseStructure(
                   lessons.length;
 
 
-                const globalNumber =
-                  globalIndex +
-                  1;
-
-
                 const result:
                   CourseLesson = {
 
@@ -168,10 +128,10 @@ function buildCourseStructure(
                   lessonNumber,
 
                   globalIndex,
-                  globalNumber,
 
-                  number:
-                    globalNumber,
+                  globalNumber:
+                    globalIndex +
+                    1,
 
                   contentKey:
                     source.contentKey,
@@ -231,33 +191,33 @@ function buildCourseStructure(
 
 
 export function getCourseModules(
-  course:
-    CourseReference
+  courseSlug:
+    string
 ) {
   return buildCourseStructure(
-    course
+    courseSlug
   ).modules;
 }
 
 
 export function getCourseLessons(
-  course:
-    CourseReference
+  courseSlug:
+    string
 ) {
   return buildCourseStructure(
-    course
+    courseSlug
   ).lessons;
 }
 
 
 export function getCourseLesson(
-  course:
-    CourseReference,
+  courseSlug:
+    string,
   lessonKey:
     string
 ) {
   return getCourseLessons(
-    course
+    courseSlug
   ).find(
     (
       lesson
@@ -269,35 +229,35 @@ export function getCourseLesson(
 
 
 export function getFirstLesson(
-  course:
-    CourseReference
+  courseSlug:
+    string
 ) {
   return getCourseLessons(
-    course
+    courseSlug
   )[0];
 }
 
 
 export function getActualLessonCount(
-  course:
-    CourseReference
+  courseSlug:
+    string
 ) {
   return getCourseLessons(
-    course
+    courseSlug
   ).length;
 }
 
 
 export function getLessonNavigation(
-  course:
-    CourseReference,
+  courseSlug:
+    string,
   lessonKey:
     string
 ) {
 
   const lessons =
     getCourseLessons(
-      course
+      courseSlug
     );
 
 
@@ -352,6 +312,10 @@ export function getLessonNavigation(
       : undefined;
 
 
+  /*
+   * Both naming conventions are intentionally returned.
+   * This keeps older lesson-page code compatible during the refactor.
+   */
   return {
     previous,
     next,

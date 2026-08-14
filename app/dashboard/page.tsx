@@ -35,8 +35,10 @@ export const metadata:
     "Your My Academic Tutor learner dashboard.",
 
   robots: {
-    index: false,
-    follow: false,
+    index:
+      false,
+    follow:
+      false,
   },
 };
 
@@ -122,6 +124,7 @@ export default async function DashboardPage() {
     enrolmentsResult,
     progressResult,
     attemptsResult,
+    certificatesResult,
   ] =
     await Promise.all([
 
@@ -205,6 +208,38 @@ export default async function DashboardPage() {
           "passed",
           true
         ),
+
+      supabase
+        .from(
+          "certificates"
+        )
+        .select(
+          `
+            course_slug,
+            certificate_code,
+            learner_name,
+            course_title,
+            completed_at,
+            final_assessment_percentage,
+            issued_at,
+            revoked_at
+          `
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .is(
+          "revoked_at",
+          null
+        )
+        .order(
+          "issued_at",
+          {
+            ascending:
+              false,
+          }
+        ),
     ]);
 
 
@@ -227,6 +262,12 @@ export default async function DashboardPage() {
 
   const attempts =
     attemptsResult
+      .data ??
+    [];
+
+
+  const certificates =
+    certificatesResult
       .data ??
     [];
 
@@ -335,11 +376,13 @@ export default async function DashboardPage() {
     <main className="dashboard-live">
 
       <section className="dashboard-live-hero">
+
         <div className="shell">
 
           <div className="dashboard-live-top">
 
             <div>
+
               <span className="eyebrow">
                 Learner dashboard
               </span>
@@ -353,29 +396,44 @@ export default async function DashboardPage() {
               <p>
                 Continue from your next
                 required lesson, track
-                checkpoints and see when
-                your final assessment
-                becomes available.
+                assessments and keep
+                your completed
+                certificates in one
+                place.
               </p>
+
             </div>
 
 
-            <form
-              action="/auth/signout"
-              method="post"
-            >
-              <button
-                type="submit"
-                className="dashboard-signout"
+            <div className="dashboard-hero-actions">
+
+              <Link
+                href="/account"
+                className="button button-white"
               >
-                Sign out
-              </button>
-            </form>
+                Account
+              </Link>
+
+
+              <form
+                action="/auth/signout"
+                method="post"
+              >
+                <button
+                  type="submit"
+                  className="dashboard-signout"
+                >
+                  Sign out
+                </button>
+              </form>
+
+            </div>
 
           </div>
 
 
           <div className="dashboard-identity">
+
             <span>
               Signed in as
             </span>
@@ -383,18 +441,22 @@ export default async function DashboardPage() {
             <strong>
               {email}
             </strong>
+
           </div>
 
         </div>
+
       </section>
 
 
       <section className="dashboard-live-content">
+
         <div className="shell">
 
           <div className="dashboard-stat-grid">
 
             <article className="dashboard-stat">
+
               <span>
                 Enrolled courses
               </span>
@@ -407,10 +469,12 @@ export default async function DashboardPage() {
                 Courses currently in
                 your learning library.
               </p>
+
             </article>
 
 
             <article className="dashboard-stat">
+
               <span>
                 Lessons completed
               </span>
@@ -423,10 +487,12 @@ export default async function DashboardPage() {
                 Completed lessons across
                 your enrolled courses.
               </p>
+
             </article>
 
 
             <article className="dashboard-stat">
+
               <span>
                 Courses completed
               </span>
@@ -440,27 +506,64 @@ export default async function DashboardPage() {
                 required component has
                 been passed.
               </p>
+
             </article>
 
 
             <article className="dashboard-stat">
+
               <span>
-                Main subject
+                Certificates
               </span>
 
-              <strong className="dashboard-stat-text">
-                {profile
-                  ?.preferred_subject ||
-                  "Explore"}
+              <strong>
+                {certificates.length}
               </strong>
 
               <p>
-                {profile
-                  ?.learner_level
-                  ? `Learning level: ${profile.learner_level}`
-                  : "Your preferred area of study."}
+                Issued certificates
+                available in your
+                learner account.
               </p>
+
             </article>
+
+          </div>
+
+
+          <div className="dashboard-profile-strip">
+
+            <div>
+              <span>
+                Learning level
+              </span>
+
+              <strong>
+                {profile
+                  ?.learner_level ||
+                  "Not set"}
+              </strong>
+            </div>
+
+
+            <div>
+              <span>
+                Preferred subject
+              </span>
+
+              <strong>
+                {profile
+                  ?.preferred_subject ||
+                  "Not set"}
+              </strong>
+            </div>
+
+
+            <Link
+              href="/account"
+            >
+              Edit profile →
+            </Link>
 
           </div>
 
@@ -468,6 +571,7 @@ export default async function DashboardPage() {
           <div className="dashboard-section-heading">
 
             <div>
+
               <span className="eyebrow">
                 My learning
               </span>
@@ -475,6 +579,7 @@ export default async function DashboardPage() {
               <h2>
                 Your courses
               </h2>
+
             </div>
 
 
@@ -510,6 +615,7 @@ export default async function DashboardPage() {
                       <div className="dashboard-course-title-row">
 
                         <div>
+
                           <span className="dashboard-course-label">
                             Enrolled course
                           </span>
@@ -517,6 +623,7 @@ export default async function DashboardPage() {
                           <h3>
                             {course.title}
                           </h3>
+
                         </div>
 
 
@@ -544,6 +651,7 @@ export default async function DashboardPage() {
                       <div className="dashboard-course-requirements">
 
                         <article>
+
                           <span>
                             Lessons
                           </span>
@@ -555,10 +663,12 @@ export default async function DashboardPage() {
                             {course.summary
                               .totalLessons}
                           </strong>
+
                         </article>
 
 
                         <article>
+
                           <span>
                             Module checkpoints
                           </span>
@@ -570,10 +680,12 @@ export default async function DashboardPage() {
                               ? `${course.summary.passedCheckpoints}/${course.summary.totalCheckpoints}`
                               : "—"}
                           </strong>
+
                         </article>
 
 
                         <article>
+
                           <span>
                             Final assessment
                           </span>
@@ -593,10 +705,12 @@ export default async function DashboardPage() {
                                   ? "Locked"
                                   : "Not required"}
                           </strong>
+
                         </article>
 
 
                         <article>
+
                           <span>
                             Certificate
                           </span>
@@ -607,6 +721,7 @@ export default async function DashboardPage() {
                               ? "Eligible"
                               : "Not yet"}
                           </strong>
+
                         </article>
 
                       </div>
@@ -636,13 +751,16 @@ export default async function DashboardPage() {
                       <div className="dashboard-progress">
 
                         <div className="dashboard-progress-track">
+
                           <span
                             style={{
                               width:
                                 `${course.summary.overallPercentage}%`,
                             }}
                           />
+
                         </div>
+
 
                         <strong>
                           {course.summary
@@ -670,6 +788,7 @@ export default async function DashboardPage() {
                       }
                       className="dashboard-course-continue-form"
                     >
+
                       <input
                         type="hidden"
                         name="courseSlug"
@@ -677,6 +796,7 @@ export default async function DashboardPage() {
                           course.slug
                         }
                       />
+
 
                       <button
                         type="submit"
@@ -691,6 +811,7 @@ export default async function DashboardPage() {
                           →
                         </span>
                       </button>
+
                     </form>
 
                   </article>
@@ -714,10 +835,10 @@ export default async function DashboardPage() {
 
               <p>
                 You have not enrolled in
-                a course yet. Explore the
-                catalogue and choose the
-                subject and level that
-                fits your goals.
+                a course yet. Explore
+                the catalogue and choose
+                the subject and level
+                that fits your goals.
               </p>
 
               <Link
@@ -731,7 +852,173 @@ export default async function DashboardPage() {
 
           )}
 
+
+          <div className="dashboard-section-heading dashboard-certificates-heading">
+
+            <div>
+
+              <span className="eyebrow">
+                Achievements
+              </span>
+
+              <h2>
+                My certificates
+              </h2>
+
+            </div>
+
+
+            <Link
+              href="/certificate-policy"
+              className="button button-outline"
+            >
+              Certificate policy
+            </Link>
+
+          </div>
+
+
+          {certificates.length >
+          0 ? (
+
+            <div className="dashboard-certificate-grid">
+
+              {certificates.map(
+                (
+                  certificate
+                ) => (
+
+                  <article
+                    key={
+                      certificate
+                        .certificate_code
+                    }
+                    className="dashboard-certificate-card"
+                  >
+
+                    <div className="dashboard-certificate-mark">
+                      MAT
+                    </div>
+
+
+                    <div>
+
+                      <span>
+                        Certificate of completion
+                      </span>
+
+                      <h3>
+                        {certificate
+                          .course_title}
+                      </h3>
+
+
+                      <div className="dashboard-certificate-meta">
+
+                        <span>
+                          Issued to{" "}
+                          <strong>
+                            {certificate
+                              .learner_name}
+                          </strong>
+                        </span>
+
+
+                        <span>
+                          Completed{" "}
+                          {formatDate(
+                            certificate
+                              .completed_at
+                          )}
+                        </span>
+
+
+                        {certificate
+                          .final_assessment_percentage !==
+                          null && (
+                          <span>
+                            Final assessment{" "}
+                            {Number(
+                              certificate
+                                .final_assessment_percentage
+                            ).toFixed(
+                              0
+                            )}
+                            %
+                          </span>
+                        )}
+
+                      </div>
+
+
+                      <code>
+                        {certificate
+                          .certificate_code}
+                      </code>
+
+
+                      <div className="dashboard-certificate-actions">
+
+                        <a
+                          href={`/courses/${certificate.course_slug}/certificate`}
+                          className="button"
+                        >
+                          Download PDF
+                        </a>
+
+
+                        <Link
+                          href={`/certificate/${certificate.certificate_code}`}
+                          className="button button-outline"
+                        >
+                          Verify
+                        </Link>
+
+                      </div>
+
+                    </div>
+
+                  </article>
+
+                )
+              )}
+
+            </div>
+
+          ) : (
+
+            <div className="dashboard-certificate-empty">
+
+              <div className="dashboard-certificate-mark">
+                MAT
+              </div>
+
+
+              <div>
+
+                <h3>
+                  Your certificates will
+                  appear here.
+                </h3>
+
+                <p>
+                  Complete all required
+                  lessons, module
+                  checkpoints and the
+                  final assessment in an
+                  assessed course to
+                  become certificate
+                  eligible.
+                </p>
+
+              </div>
+
+            </div>
+
+          )}
+
         </div>
+
       </section>
 
     </main>
